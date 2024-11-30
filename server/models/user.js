@@ -1,9 +1,9 @@
-import { Model } from 'objection'
-import bcrypt from 'bcrypt'
+import { Model } from "objection"
+import bcrypt from "bcrypt"
 
 class User extends Model {
   static get tableName() {
-    return 'users'
+    return "users"
   }
 
   async hashPassword(password) {
@@ -13,6 +13,5 @@ class User extends Model {
   async verifyPassword(password) {
     return bcrypt.compare(password, this.password)
   }
-
 }
 export default User

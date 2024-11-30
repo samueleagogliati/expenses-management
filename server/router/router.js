@@ -1,44 +1,44 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router"
 import IndexExpenses from "../../src/pages/IndexExpenses.vue"
 import Calendar from "../../src/pages/Calendar.vue"
-import LoginPage from '../../src/pages/LoginPage.vue'
-import SignupPage from '../../src/pages/SignupPage.vue'
-import Chart from '../../src/pages/Chart.vue'
-import { jwtDecode } from 'jwt-decode'
+import LoginPage from "../../src/pages/LoginPage.vue"
+import SignupPage from "../../src/pages/SignupPage.vue"
+import Chart from "../../src/pages/Chart.vue"
+import { jwtDecode } from "jwt-decode"
 
 const routes = [
   {
-    path: '/expenses',
+    path: "/expenses",
     component: IndexExpenses,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/',
+    path: "/",
     component: Calendar,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/login',
-    component: LoginPage
+    path: "/login",
+    component: LoginPage,
   },
   {
-    path: '/signup',
-    component: SignupPage
+    path: "/signup",
+    component: SignupPage,
   },
   {
-    path: '/chart',
+    path: "/chart",
     component: Chart,
-    meta: { requiresAuth: true }
-  }
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 function checkTokenValidity() {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem("token")
   if (!token) {
     return false
   }
@@ -55,13 +55,11 @@ router.beforeEach((to, from, next) => {
     const isTokenValid = checkTokenValidity()
     if (isTokenValid) {
       next()
-    } 
-    else {
+    } else {
       alert("Effettuare il login!")
-      next('/login')
+      next("/login")
     }
-  } 
-  else {
+  } else {
     next()
   }
 })

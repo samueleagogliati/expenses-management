@@ -1,13 +1,21 @@
 <template>
   <div class="" v-if="user">
-
     <div class="form-check form-switch ms-3 mb-2">
-        <label class="form-check-label" for="show-filters" v-if="!showFilters">Mostra filtri</label>
-        <label class="form-check-label" for="show-filters" v-else>Nascondi filtri</label>
-        <input class="form-check-input" type="checkbox" id="show-filters" @change="showHideFilters">
+      <label class="form-check-label" for="show-filters" v-if="!showFilters"
+        >Mostra filtri</label
+      >
+      <label class="form-check-label" for="show-filters" v-else
+        >Nascondi filtri</label
+      >
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="show-filters"
+        @change="showHideFilters"
+      />
     </div>
 
-    <div class="row ms-2 mb-2 d-flex align-items-end" v-if="showFilters" >
+    <div class="row ms-2 mb-2 d-flex align-items-end" v-if="showFilters">
       <div class="col-md-2">
         <div class="form-group">
           <label for="monthSelect">Mese</label>
@@ -63,7 +71,9 @@
         </div>
       </div>
       <div class="col-md-2">
-        <button class="btn btn-secondary ps-3 pe-3" @click="searchWithFilters">Cerca</button>
+        <button class="btn btn-secondary ps-3 pe-3" @click="searchWithFilters">
+          Cerca
+        </button>
       </div>
     </div>
 
@@ -77,19 +87,19 @@
 </template>
 
 <script>
-import ExpensesTableVue from './components/ExpensesTable.vue';
-import axios from 'axios';
-import { format } from 'date-fns'
+import ExpensesTableVue from "./components/ExpensesTable.vue"
+import axios from "axios"
+import { format } from "date-fns"
 
 export default {
   components: {
-    ExpensesTableVue
+    ExpensesTableVue,
   },
   props: {
     user: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   data() {
     return {
@@ -98,68 +108,71 @@ export default {
       noData: false,
       filters: {
         month: null,
-        year: null
+        year: null,
       },
-      showFilters: false
+      showFilters: false,
     }
   },
   watch: {
-    async user(oldValue, newValue){
-      await this.loadData() 
+    async user(oldValue, newValue) {
+      await this.loadData()
     },
   },
   methods: {
     async loadData() {
-    try {
-      if (this.user) {
-        const expenses = await axios.post('http://localhost:5000/all_expenses', { user_id: this.user.id, month: this.filters.month, year: this.filters.year})
-        const categories = await axios.get('http://localhost:5000/categories')
-        this.categories = categories.data
-        console.log(expenses.data)
-        this.expenses = expenses.data.map(item => ({
-          id: item.id,
-          category: item.category ? item.category.description : null,
-          description: item.description,
-          price: item.price,
-          date: format(item.date, 'dd/MM/yyyy'),
-        }))
-        
-      } else {
-        console.error('User is null or undefined');
+      try {
+        if (this.user) {
+          const expenses = await axios.post(
+            "http://localhost:5000/all_expenses",
+            {
+              user_id: this.user.id,
+              month: this.filters.month,
+              year: this.filters.year,
+            },
+          )
+          const categories = await axios.get("http://localhost:5000/categories")
+          this.categories = categories.data
+          console.log(expenses.data)
+          this.expenses = expenses.data.map((item) => ({
+            id: item.id,
+            category: item.category ? item.category.description : null,
+            description: item.description,
+            price: item.price,
+            date: format(item.date, "dd/MM/yyyy"),
+          }))
+        } else {
+          console.error("User is null or undefined")
+        }
+      } catch (error) {
+        console.error("Error fetching expenses:", error)
       }
-    } 
-    catch (error) {
-      console.error('Error fetching expenses:', error);
+    },
+    async showHideFilters() {
+      this.showFilters = !this.showFilters
+      // if (!this.showFilters){
+      //   this.filters.month = null
+      //   this.filters.year = null
+      //   await this.loadData()
+      // }
+    },
+    async searchWithFilters() {
+      var selectMonth = document.getElementById("monthSelect")
+      var selectedIndexMonth = selectMonth.selectedIndex
+      var month = selectMonth.options[selectedIndexMonth].value
+      var selectYear = document.getElementById("yearSelect")
+      var selectedIndexYear = selectYear.selectedIndex
+      var year = selectYear.options[selectedIndexYear].value
+      this.filters.year = year
+      this.filters.month = month
+      await this.loadData()
+    },
+  },
+  async mounted() {
+    if (this.user) {
+      await this.loadData()
     }
   },
-  async showHideFilters(){
-    this.showFilters = !this.showFilters
-    // if (!this.showFilters){
-    //   this.filters.month = null
-    //   this.filters.year = null
-    //   await this.loadData()
-    // }
-  },
-  async searchWithFilters(){
-    var selectMonth = document.getElementById("monthSelect")
-    var selectedIndexMonth = selectMonth.selectedIndex
-    var month = selectMonth.options[selectedIndexMonth].value 
-    var selectYear = document.getElementById("yearSelect")
-    var selectedIndexYear = selectYear.selectedIndex
-    var year = selectYear.options[selectedIndexYear].value
-    this.filters.year = year
-    this.filters.month = month
-    await this.loadData()
-  }
-},
-async mounted() {
-  if (this.user){
-    await this.loadData()
-  }
-}
 }
 </script>
 
-<style>
-
-</style>
+<style></style>

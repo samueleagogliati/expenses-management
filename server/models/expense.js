@@ -1,17 +1,16 @@
-import { Model } from 'objection'
-import Category from './category.js'
+import { Model } from "objection"
+import Category from "./category.js"
 
 class Expense extends Model {
   static get tableName() {
-    return 'expenses'
+    return "expenses"
   }
 
   static async saveData(data) {
     try {
       const expense = await Expense.query().insert(data)
       return expense
-    } 
-    catch (error) {
+    } catch (error) {
       throw error
     }
   }
@@ -20,12 +19,11 @@ class Expense extends Model {
     try {
       const expense = await Expense.query().findById(expense_id)
       if (!expense) {
-        throw new Error('Expense non trovata')
+        throw new Error("Expense non trovata")
       }
       await Expense.query().deleteById(expense_id)
-      return 'Expense eliminata con successo'
-    }
-    catch (error) {
+      return "Expense eliminata con successo"
+    } catch (error) {
       throw error
     }
   }
@@ -34,62 +32,63 @@ class Expense extends Model {
     try {
       const startDate = new Date(year, month, 1)
       const endDate = new Date(year, month + 1, 0)
-  
+
       const totalExpenses = await Expense.query()
-        .where('date', '>=', startDate)
-        .andWhere('date', '<=', endDate)
-        .andWhere('user_id', userId)
-        .select(Expense.raw('SUM(price) AS total'))
+        .where("date", ">=", startDate)
+        .andWhere("date", "<=", endDate)
+        .andWhere("user_id", userId)
+        .select(Expense.raw("SUM(price) AS total"))
 
       const total = totalExpenses[0].total
-  
+
       return total
-    } 
-    catch (error) {
+    } catch (error) {
       throw error
     }
   }
-  
 
   static async getExpensesByDayAndUser(month, year, userId) {
     try {
       const startDate = new Date(year, month, 1)
       const endDate = new Date(year, month + 1, 0)
-  
+
       const expensesByDay = []
-  
+
       for (let day = 1; day <= endDate.getDate(); day++) {
-        const total = await Expense.getTotalExpensesByDay(month, day, year, userId)
-  
+        const total = await Expense.getTotalExpensesByDay(
+          month,
+          day,
+          year,
+          userId,
+        )
+
         expensesByDay.push({ day, total })
       }
-  
+
       return expensesByDay
     } catch (error) {
       throw error
     }
   }
-  
 
   static async getTotalExpensesByDay(month, day, year, userId) {
     try {
       const startDate = new Date(year, month, day, 0, 0, 0)
       const endDate = new Date(year, month, day, 23, 59, 59)
-  
+
       const totalExpenses = await Expense.query()
-        .where('date', '>=', startDate)
-        .andWhere('date', '<=', endDate)
-        .andWhere('user_id', userId)
-        .select(Expense.raw('SUM(price) AS total'))
-  
+        .where("date", ">=", startDate)
+        .andWhere("date", "<=", endDate)
+        .andWhere("user_id", userId)
+        .select(Expense.raw("SUM(price) AS total"))
+
       const total = totalExpenses[0].total
-  
+
       return total
     } catch (error) {
       throw error
     }
   }
-  
 
   static get relationMappings() {
     return {
@@ -97,10 +96,10 @@ class Expense extends Model {
         relation: Model.BelongsToOneRelation,
         modelClass: Category,
         join: {
-          from: 'expenses.category_id',
-          to: 'categories.id'
-        }
-      }
+          from: "expenses.category_id",
+          to: "categories.id",
+        },
+      },
     }
   }
 }

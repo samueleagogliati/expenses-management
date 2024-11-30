@@ -1,29 +1,33 @@
 <template>
   <Navbar :userLogged="userLogged" :user="user"></Navbar>
-  <router-view @login="loginDone" :user="user" style="margin-top: 80px"></router-view>
+  <router-view
+    @login="loginDone"
+    :user="user"
+    style="margin-top: 80px"
+  ></router-view>
 </template>
 
 <script>
-import { jwtDecode } from 'jwt-decode'
-import Navbar from './pages/components/Navbar.vue'
-import axios from 'axios'
+import { jwtDecode } from "jwt-decode"
+import Navbar from "./pages/components/Navbar.vue"
+import axios from "axios"
 export default {
   components: {
     Navbar,
   },
-  data(){
+  data() {
     return {
       userLogged: false,
-      user: null
+      user: null,
     }
   },
   methods: {
-    loginDone(){
+    loginDone() {
       this.userLogged = true
       this.checkTokenValidity()
     },
     checkTokenValidity() {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem("token")
       if (!token) {
         return false
       }
@@ -35,18 +39,15 @@ export default {
       }
       return true
     },
-    async getUser(user_id){
-      let resp = await axios.get('http://localhost:5000/users/'+user_id)
+    async getUser(user_id) {
+      let resp = await axios.get("http://localhost:5000/users/" + user_id)
       this.user = resp.data
-    }
+    },
   },
-  mounted(){
+  mounted() {
     this.userLogged = this.checkTokenValidity()
-  }
-
+  },
 }
 </script>
 
-<style>
-
-</style>
+<style></style>
