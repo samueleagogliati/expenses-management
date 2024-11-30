@@ -1,7 +1,7 @@
 <template>
-  <div class="signup_container mt-4">
-    <div class="container_child signup_form">
-      <form id="signup-form">
+  <div class="d-flex justify-content-center align-items-center">
+    <div class="signup_container p-4">
+      <form id="signup-form" class="w-100">
         <div class="form-group">
           <label for="firstname">Nome</label>
           <input
@@ -25,11 +25,11 @@
           />
         </div>
         <div class="form-group">
-          <label for="passwordRepeat">Username</label>
+          <label for="username">Username</label>
           <input
             autocomplete="new-password"
             class="form-control"
-            type="username"
+            type="text"
             name="username"
             id="username"
             v-model="username"
@@ -130,7 +130,7 @@ export default {
     const validator = new JustValidate("#signup-form", {
       errorFieldCssClass: "is-invalid",
       successFieldCssClass: "is-valid",
-      validateBeforeSubmitting: true,
+      validateBeforeSubmitting: false,
     })
     validator
       .onFail((fields) => {
@@ -193,30 +193,34 @@ body {
     sans-serif;
   background: #e9e9e9;
 }
-a,
-[type="submit"] {
-  transition: all 0.25s ease-in;
-}
+
 .signup_container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0px remy(3px) remy(7px) rgb(0, 0, 0);
-}
-.container_child {
+  align-items: center;
+  min-height: 80vh; /* Centra verticalmente */
+  box-shadow: 0px 3px 7px rgb(0, 0, 0);
   width: 50%;
-  height: 100%;
-  color: #fff;
 }
-.signup_form {
-  padding: 2.5rem;
+
+.container_child {
+  width: 100%;
   background: #fafafa;
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.form-group {
+  margin-bottom: 20px;
+}
+
 label {
   font-size: 0.85rem;
   text-transform: uppercase;
   color: #3b3a3a;
 }
+
 .form-control {
   background-color: transparent;
   border-top: 0;
@@ -229,9 +233,7 @@ label {
     box-shadow: none;
   }
 }
-.form-group {
-  margin-bottom: 10px;
-}
+
 .btn--form {
   padding: 0.5rem 2.5rem;
   font-size: 0.95rem;
@@ -245,6 +247,7 @@ label {
     background: lighten(#111, 13%);
   }
 }
+
 .signup_link {
   font-size: 0.8rem;
   font-weight: 600;

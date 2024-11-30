@@ -1,40 +1,44 @@
 <template>
-  <div class="login-container mt-5">
-    <form id="login-form" novalidate="novalidate">
-      <div class="form-group control-wrapper">
-        <label class="input-label" for="username">Username</label>
-        <div class="input-wrapper">
-          <input
-            type="text"
-            id="username"
-            v-model="username"
-            autocomplete="off"
-          />
+  <div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="login-container p-4">
+      <form id="login-form" novalidate="novalidate">
+        <div class="form-group control-wrapper">
+          <label class="input-label" for="username">Username</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="username"
+              v-model="username"
+              autocomplete="off"
+              class="form-control"
+            />
+          </div>
         </div>
-      </div>
-      <div class="form-group control-wrapper">
-        <label class="input-label" for="password">Password</label>
-        <div class="input-wrapper">
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            autocomplete="off"
-          />
+        <div class="form-group control-wrapper">
+          <label class="input-label" for="password">Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="password"
+              v-model="password"
+              autocomplete="off"
+              class="form-control"
+            />
+          </div>
         </div>
-      </div>
 
-      <error-message
-        class="mt-3"
-        v-if="errorMessage"
-        :message="errorMessage"
-        @alertClosed="resetErrorMessage"
-      ></error-message>
+        <error-message
+          class="mt-3"
+          v-if="errorMessage"
+          :message="errorMessage"
+          @alertClosed="resetErrorMessage"
+        ></error-message>
 
-      <div class="d-flex justify-content-center">
-        <button type="submit" class="btn--form">Login</button>
-      </div>
-    </form>
+        <div class="d-flex justify-content-center">
+          <button type="submit" class="btn--form">Login</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div v-if="user" class="text-white">{{ user.firstname }}</div>
@@ -125,12 +129,13 @@ export default {
 
 <style lang="scss" scoped>
 .login-container {
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  background-color: #f9f9f9;
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  background-color: #f9f9f9;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -163,7 +168,7 @@ label {
   text-transform: uppercase;
   color: #fff;
   background: #111;
-  border-radius: remy(35px);
+  border-radius: 35px;
   &:focus,
   &:hover {
     background: lighten(#111, 13%);
@@ -176,5 +181,22 @@ input {
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ccc;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    width: 80%;
+    padding: 15px;
+  }
+
+  .btn--form {
+    width: 100%;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif;
 }
 </style>
