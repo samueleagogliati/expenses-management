@@ -233,7 +233,7 @@ export default {
       let month = date.getMonth()
       let year = date.getFullYear()
       let total_of_days = await axios.post(
-        "http://localhost:5000/expenses_of_days",
+        "http://localhost:5001/expenses_of_days",
         { year: year, month: month, userId: this.user.id },
       )
       this.total_of_days = total_of_days.data
@@ -244,7 +244,7 @@ export default {
       let year = date.getFullYear()
       let userId = this.user.id
       try {
-        let response = await axios.post("http://localhost:5000/expenses", {
+        let response = await axios.post("http://localhost:5001/expenses", {
           year,
           month,
           userId,
@@ -271,7 +271,7 @@ export default {
     },
     async editExpense(expense) {
       let resp = await axios.put(
-        "http://localhost:5000/expenses/" + expense.id,
+        "http://localhost:5001/expenses/" + expense.id,
         {
           category_id: expense.category_id,
           description: expense.description,
@@ -299,7 +299,7 @@ export default {
       })
     },
     async loadExpenses() {
-      let resp = await axios.post("http://localhost:5000/expenses_of_day", {
+      let resp = await axios.post("http://localhost:5001/expenses_of_day", {
         selectedDate: this.selectedDate,
         userId: this.user.id,
       })
@@ -311,14 +311,14 @@ export default {
       }))
     },
     async loadCategories() {
-      let resp = await axios.get("http://localhost:5000/categories")
+      let resp = await axios.get("http://localhost:5001/categories")
       this.categories = resp.data
     },
     async saveExpense() {
       let category_id = $("#category").prop("selectedIndex")
       let description = $("#description").val()
       let price = $("#price").val()
-      let response = await axios.post("http://localhost:5000/saveExpense", {
+      let response = await axios.post("http://localhost:5001/saveExpense", {
         category_id: category_id,
         description: description,
         price: price,
@@ -340,7 +340,7 @@ export default {
       const token = localStorage.getItem("token")
       const decodedToken = jwtDecode(token)
       let resp = await axios.get(
-        "http://localhost:5000/users/" + decodedToken.id,
+        "http://localhost:5001/users/" + decodedToken.id,
       )
       return resp.data
     },

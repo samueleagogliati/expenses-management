@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 
 // Funzione per produrre l'hash della password dell'utente
 const hashPassword = async (password) => {

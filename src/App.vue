@@ -40,7 +40,7 @@ export default {
       return true
     },
     async getUser(user_id) {
-      let resp = await axios.get("http://localhost:5000/users/" + user_id)
+      let resp = await axios.get("http://localhost:5001/users/" + user_id)
       this.user = resp.data
     },
   },

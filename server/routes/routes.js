@@ -2,9 +2,9 @@ import { Router } from "express"
 const router = Router()
 import Expense from "../models/expense.js"
 import Category from "../models/category.js"
-import jwt from "jsonwebtoken"
 import User from "../models/user.js"
-import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+import bcrypt from "bcryptjs"
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body
@@ -264,6 +264,10 @@ router.post("/expenses_by_category", async (req, res) => {
 router.get("/categories", async (req, res) => {
   const categories = await Category.query()
   res.json(categories)
+})
+
+router.post("update_categories", async (req, res) => {
+  let params = req.body
 })
 // END CATEGORIES
 

@@ -1,8 +1,8 @@
 const knexConfig = {
     client: 'mysql2',
     connection: {
-      host: '192.168.1.200',
-      user: 'sassa',
+      host: 'localhost',
+      user: 'root',
       password: 'sassa',
       database: 'expenses_management'
     }

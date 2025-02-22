@@ -1,5 +1,5 @@
 import { Model } from "objection"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 class User extends Model {
   static get tableName() {

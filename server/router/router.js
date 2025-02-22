@@ -4,6 +4,8 @@ import Calendar from "../../src/pages/Calendar.vue"
 import LoginPage from "../../src/pages/LoginPage.vue"
 import SignupPage from "../../src/pages/SignupPage.vue"
 import Chart from "../../src/pages/Chart.vue"
+import SettingsPage from "../../src/pages/SettingsPage.vue"
+
 import { jwtDecode } from "jwt-decode"
 
 const routes = [
@@ -28,6 +30,11 @@ const routes = [
   {
     path: "/chart",
     component: Chart,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/settings",
+    component: SettingsPage,
     meta: { requiresAuth: true },
   },
 ]

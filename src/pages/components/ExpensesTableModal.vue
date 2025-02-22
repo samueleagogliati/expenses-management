@@ -74,7 +74,7 @@ export default {
       if (confirm("Sei sicuro di voler eliminare questa spesa?")) {
         try {
           let resp = await axios.delete(
-            "http://localhost:5000/expenses/" + expense_id,
+            "http://localhost:5001/expenses/" + expense_id,
           )
           if (resp.status === 200) {
             alert("Spesa eliminata")
