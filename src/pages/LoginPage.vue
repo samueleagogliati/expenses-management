@@ -45,9 +45,9 @@
 </template>
 
 <script>
-import ErrorMessage from "./components/ErrorMessage.vue"
-import axios from "axios"
-import JustValidate from "just-validate"
+import ErrorMessage from './components/ErrorMessage.vue'
+import axios from 'axios'
+import JustValidate from 'just-validate'
 export default {
   components: {
     ErrorMessage,
@@ -65,7 +65,7 @@ export default {
       default: null,
     },
   },
-  emits: ["login"],
+  emits: ['login'],
   methods: {
     async login() {
       try {
@@ -73,21 +73,21 @@ export default {
           username: this.username,
           password: this.password,
         }
-        let resp = await axios.post("http://localhost:5001/login", params)
+        let resp = await axios.post('http://localhost:5001/login', params)
         let token = resp.data.token
-        localStorage.setItem("token", "Bearer" + token)
+        localStorage.setItem('token', 'Bearer' + token)
         if (resp.status === 200) {
-          this.$emit("login")
-          this.$router.push("/")
+          this.$emit('login')
+          this.$router.push('/')
         } else {
-          this.errorMessage = "Credenziali non valide, riprova!"
+          this.errorMessage = 'Credenziali non valide, riprova!'
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          this.errorMessage = "Credenziali non valide, riprova!"
+          this.errorMessage = 'Credenziali non valide, riprova!'
         } else {
           this.errorMessage =
-            "Si è verificato un errore durante il login. Riprova più tardi."
+            'Si è verificato un errore durante il login. Riprova più tardi.'
         }
       }
     },
@@ -99,28 +99,28 @@ export default {
     user(newValue, oldValue) {},
   },
   mounted() {
-    const validator = new JustValidate("#login-form", {
-      errorFieldCssClass: "is-invalid",
-      successFieldCssClass: "is-valid",
+    const validator = new JustValidate('#login-form', {
+      errorFieldCssClass: 'is-invalid',
+      successFieldCssClass: 'is-valid',
       validateBeforeSubmitting: true,
     })
     validator
       .onFail((fields) => {
-        this.errorMessage = "Controllare i campi inseriti"
+        this.errorMessage = 'Controllare i campi inseriti'
       })
       .onSuccess((fields) => {
         this.login()
       })
-      .addField(document.querySelector("#username"), [
+      .addField(document.querySelector('#username'), [
         {
-          rule: "required",
-          errorMessage: "Il campo username è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo username è obbligatorio',
         },
       ])
-      .addField(document.querySelector("#password"), [
+      .addField(document.querySelector('#password'), [
         {
-          rule: "required",
-          errorMessage: "Il campo password è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo password è obbligatorio',
         },
       ])
   },
@@ -128,6 +128,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use 'sass:color';
 .login-container {
   width: 100%;
   max-width: 400px;
@@ -171,7 +172,7 @@ label {
   border-radius: 35px;
   &:focus,
   &:hover {
-    background: lighten(#111, 13%);
+    background: color.adjust(#111, $lightness: 13%);
   }
 }
 
@@ -197,6 +198,6 @@ input {
 body {
   margin: 0;
   padding: 0;
-  font-family: "Arial", sans-serif;
+  font-family: 'Arial', sans-serif;
 }
 </style>

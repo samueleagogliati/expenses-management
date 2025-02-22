@@ -20,7 +20,11 @@
         <div class="form-group">
           <label for="monthSelect">Mese</label>
           <select class="form-control" id="monthSelect" v-model="monthSelected">
-            <option v-for="(month, index) in months" :key="index" :value="index + 1">
+            <option
+              v-for="(month, index) in months"
+              :key="index"
+              :value="index + 1"
+            >
               {{ month }}
             </option>
           </select>
@@ -30,7 +34,9 @@
         <div class="form-group">
           <label for="yearSelect">Anno</label>
           <select class="form-control" id="yearSelect" v-model="yearSelected">
-            <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            <option v-for="year in years" :key="year" :value="year">
+              {{ year }}
+            </option>
           </select>
         </div>
       </div>
@@ -51,9 +57,10 @@
 </template>
 
 <script>
-import ExpensesTableVue from "./components/ExpensesTable.vue"
-import axios from "axios"
-import { format } from "date-fns"
+import ExpensesTableVue from './components/ExpensesTable.vue'
+import axios from 'axios'
+import { format } from 'date-fns'
+import callService from '../services/api'
 
 export default {
   components: {
@@ -76,11 +83,21 @@ export default {
       },
       showFilters: false,
       months: [
-        "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-        "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+        'Gennaio',
+        'Febbraio',
+        'Marzo',
+        'Aprile',
+        'Maggio',
+        'Giugno',
+        'Luglio',
+        'Agosto',
+        'Settembre',
+        'Ottobre',
+        'Novembre',
+        'Dicembre',
       ],
       monthSelected: new Date().getMonth() + 1,
-      yearSelected: new Date().getFullYear()
+      yearSelected: new Date().getFullYear(),
     }
   },
   watch: {
@@ -92,29 +109,25 @@ export default {
     async loadData() {
       try {
         if (this.user) {
-          const expenses = await axios.post(
-            "http://localhost:5001/all_expenses",
-            {
-              user_id: this.user.id,
-              month: this.filters.month,
-              year: this.filters.year,
-            },
-          )
-          const categories = await axios.get("http://localhost:5001/categories")
-          this.categories = categories.data
-          console.log(expenses.data)
-          this.expenses = expenses.data.map((item) => ({
+          const expenses = await callService('expenses.allExpenses', {
+            user_id: this.user.id,
+            month: this.filters.month,
+            year: this.filters.year,
+          })
+          const categories = await callService('categories.list', {})
+          this.categories = categories
+          this.expenses = expenses.map((item) => ({
             id: item.id,
             category: item.category ? item.category.description : null,
             description: item.description,
             price: item.price,
-            date: format(item.date, "dd/MM/yyyy"),
+            date: format(item.date, 'dd/MM/yyyy'),
           }))
         } else {
-          console.error("User is null or undefined")
+          console.error('User is null or undefined')
         }
       } catch (error) {
-        console.error("Error fetching expenses:", error)
+        console.error('Error fetching expenses:', error)
       }
     },
     async showHideFilters() {
@@ -129,15 +142,15 @@ export default {
     },
   },
   computed: {
-    years(){
+    years() {
       let currentYear = new Date().getFullYear()
       currentYear = Number(currentYear)
       let years = []
-      for (let i = currentYear-2; i <= currentYear +3; i++){
+      for (let i = currentYear - 2; i <= currentYear + 3; i++) {
         years.push(i)
       }
       return years
-    }
+    },
   },
   async mounted() {
     if (this.user) {

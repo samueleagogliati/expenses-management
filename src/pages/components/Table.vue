@@ -52,12 +52,13 @@
 </template>
 
 <script>
-import { format } from "date-fns"
-import { VueGoodTable } from "vue-good-table-next"
-import "vue-good-table-next/dist/vue-good-table-next.css"
-import VueDatePicker from "@vuepic/vue-datepicker"
-import "@vuepic/vue-datepicker/dist/main.css"
-import axios from "axios"
+import { format } from 'date-fns'
+import { VueGoodTable } from 'vue-good-table-next'
+import 'vue-good-table-next/dist/vue-good-table-next.css'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import axios from 'axios'
+import callService from '../../services/api'
 export default {
   props: {
     columns: {
@@ -78,21 +79,23 @@ export default {
   },
   methods: {
     ciao() {
-      this.columns[3].filterOptions.filterValue = ""
+      this.columns[3].filterOptions.filterValue = ''
       this.columns[3].filterOptions.filterValue = format(
         this.date,
-        "dd/MM/yyyy",
+        'dd/MM/yyyy',
       )
     },
-    async deleteRow(expense_id) {
-      if (confirm("Sei sicuro di voler eliminare questa spesa?")) {
+    async deleteRow(expenseId) {
+      if (confirm('Sei sicuro di voler eliminare questa spesa?')) {
         try {
-          let resp = await axios.delete(
-            "http://localhost:5001/expenses/" + expense_id,
-          )
+          let resp = await callService('expenses.deleteExpense', {
+            id: expenseId,
+          })
           if (resp.status === 200) {
-            alert("Spesa eliminata")
+            alert(resp.message)
             window.location.reload()
+          } else {
+            alert(resp.message)
           }
         } catch (error) {
           alert("Si è verificato un errore durante l'eliminazione dell'expense")

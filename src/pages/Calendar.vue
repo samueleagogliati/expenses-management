@@ -166,24 +166,25 @@
 </template>
 
 <script>
-import JustValidate from "just-validate"
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns"
-import { it } from "date-fns/locale"
-import $ from "jquery"
-import axios from "axios"
-import ExpensesTableModal from "./components/ExpensesTableModal.vue"
-import AlertMessage from "./components/AlertMessage.vue"
-import { jwtDecode } from "jwt-decode"
+import JustValidate from 'just-validate'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import { it } from 'date-fns/locale'
+import $ from 'jquery'
+import axios from 'axios'
+import ExpensesTableModal from './components/ExpensesTableModal.vue'
+import AlertMessage from './components/AlertMessage.vue'
+import { jwtDecode } from 'jwt-decode'
+import callService from '../services/api'
 
 export default {
-  name: "Calendar",
+  name: 'Calendar',
   components: {
     ExpensesTableModal,
     AlertMessage,
   },
   data() {
     return {
-      items: [{ title: "ciao" }],
+      items: [{ title: 'ciao' }],
       total: 0,
       selectedDate: null,
       currentDate: new Date(),
@@ -205,13 +206,13 @@ export default {
   props: {},
   computed: {
     currentMonth() {
-      const monthName = format(this.currentDate, "MMMM", { locale: it })
+      const monthName = format(this.currentDate, 'MMMM', { locale: it })
       const capitalizedMonthName =
         monthName.charAt(0).toUpperCase() + monthName.slice(1)
       return (
         capitalizedMonthName +
-        " " +
-        format(this.currentDate, "yyyy", { locale: it })
+        ' ' +
+        format(this.currentDate, 'yyyy', { locale: it })
       )
     },
     days() {
@@ -221,7 +222,7 @@ export default {
         start: startDate,
         end: endDate,
       })
-      return allDaysOfMonth.map((day) => format(day, "d", { locale: it }))
+      return allDaysOfMonth.map((day) => format(day, 'd', { locale: it }))
     },
   },
   methods: {
@@ -230,32 +231,44 @@ export default {
     },
     async loadDataForDays() {
       let date = new Date(this.currentDate)
-      let month = date.getMonth()
-      let year = date.getFullYear()
-      let total_of_days = await axios.post(
-        "http://localhost:5001/expenses_of_days",
-        { year: year, month: month, userId: this.user.id },
+
+      let results = await callService('expenses.getTotalOfDays', {
+        userId: this.user.id,
+        startDate: new Date(date.getFullYear(), date.getMonth(), 1),
+        endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+      })
+
+      let allDays = Array.from(
+        {
+          length: new Date(
+            date.getFullYear(),
+            date.getMonth() + 1,
+            0,
+          ).getDate(),
+        },
+        (_, i) => i + 1,
       )
-      this.total_of_days = total_of_days.data
+
+      this.total_of_days = allDays.map((day) => {
+        let dayResult = results.find((r) => new Date(r.date).getDate() === day)
+
+        return {
+          day: day,
+          total: dayResult ? dayResult.total : 0,
+        }
+      })
     },
     async loadTotal() {
       let date = new Date(this.currentDate)
-      let month = date.getMonth()
-      let year = date.getFullYear()
       let userId = this.user.id
       try {
-        let response = await axios.post("http://localhost:5001/expenses", {
-          year,
-          month,
+        this.total = await callService('expenses.getTotalOfPeriod', {
           userId,
+          startDate: new Date(date.getFullYear(), date.getMonth(), 1),
+          endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0),
         })
-        if (response && response.data) {
-          this.total = response.data
-        } else {
-          this.total = 0
-        }
       } catch (error) {
-        console.error("Errore durante il caricamento del totale:", error)
+        console.error('Errore durante il caricamento del totale:', error)
         this.total = 0
       }
     },
@@ -270,27 +283,24 @@ export default {
       this.currentDate = nextMonth
     },
     async editExpense(expense) {
-      let resp = await axios.put(
-        "http://localhost:5001/expenses/" + expense.id,
-        {
-          category_id: expense.category_id,
-          description: expense.description,
-          price: expense.price,
-        },
-      )
+      await callService('expenses.updateExpense', {
+        id: expense.id,
+        category_id: expense.category_id,
+        description: expense.description,
+        price: expense.price,
+      })
       await this.loadExpenses()
     },
     async openModal(day) {
-      $("#category").val("")
-      $("#description").val("")
-      $("#price").val("")
+      $('#category').val('')
+      $('#description').val('')
+      $('#price').val('')
       this.showSelect = false
       const currentMonth = this.currentDate.getMonth()
       const currentYear = this.currentDate.getFullYear()
       this.selectedDate = new Date(currentYear, currentMonth, day)
-      this.selectedDay = "Dettaglio " + format(this.selectedDate, "dd/MM/yyyy")
+      this.selectedDay = 'Dettaglio ' + format(this.selectedDate, 'dd/MM/yyyy')
       await this.loadExpenses()
-      await this.loadCategories()
     },
     toggleSelect() {
       this.showSelect = !this.showSelect
@@ -299,11 +309,13 @@ export default {
       })
     },
     async loadExpenses() {
-      let resp = await axios.post("http://localhost:5001/expenses_of_day", {
-        selectedDate: this.selectedDate,
+      let resp = await callService('expenses.getListWithCategories', {
         userId: this.user.id,
+        startDate: this.selectedDate,
+        endDate: this.selectedDate,
       })
-      this.expenses = resp.data.map((item) => ({
+
+      this.expenses = resp.map((item) => ({
         id: item?.id,
         category: item.category?.description,
         description: item?.description,
@@ -311,14 +323,13 @@ export default {
       }))
     },
     async loadCategories() {
-      let resp = await axios.get("http://localhost:5001/categories")
-      this.categories = resp.data
+      this.categories = await callService('categories.list', {})
     },
     async saveExpense() {
-      let category_id = $("#category").prop("selectedIndex")
-      let description = $("#description").val()
-      let price = $("#price").val()
-      let response = await axios.post("http://localhost:5001/saveExpense", {
+      let category_id = $('#category').prop('selectedIndex')
+      let description = $('#description').val()
+      let price = $('#price').val()
+      let response = await callService('expenses.createExpense', {
         category_id: category_id,
         description: description,
         price: price,
@@ -327,8 +338,8 @@ export default {
       })
       if (response.status === 200) {
         this.showAlertMessage = true
-        this.message = "Spesa inserita"
-        this.typeMessage = "success"
+        this.message = response.message
+        this.typeMessage = 'success'
         this.showSelect = false
         await this.loadExpenses()
         setTimeout(() => {
@@ -337,49 +348,47 @@ export default {
       }
     },
     async getUser() {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem('token')
       const decodedToken = jwtDecode(token)
-      let resp = await axios.get(
-        "http://localhost:5001/users/" + decodedToken.id,
-      )
-      return resp.data
+      let resp = await callService('users.getUser', { id: decodedToken.id })
+      return resp
     },
     loadValidation() {
       if (this.validation != null) {
         this.validation.destroy()
       }
       if (this.showSelect) {
-        let validator = new JustValidate("#form-expenses", {
-          errorFieldCssClass: "is-invalid",
-          successFieldCssClass: "is-valid",
+        let validator = new JustValidate('#form-expenses', {
+          errorFieldCssClass: 'is-invalid',
+          successFieldCssClass: 'is-valid',
         })
         validator
           .onFail((fields) => {
-            this.errorMessage = "Controllare i campi inseriti"
+            this.errorMessage = 'Controllare i campi inseriti'
           })
           .onSuccess(async (fields, event) => {
             await this.saveExpense()
           })
-          .addField("#category", [
+          .addField('#category', [
             {
-              rule: "required",
-              errorMessage: "Il campo categoria è obbligatorio",
+              rule: 'required',
+              errorMessage: 'Il campo categoria è obbligatorio',
             },
           ])
-          .addField("#price", [
+          .addField('#price', [
             {
-              rule: "required",
-              errorMessage: "Il campo prezzo è obbligatorio",
+              rule: 'required',
+              errorMessage: 'Il campo prezzo è obbligatorio',
             },
             {
-              rule: "number",
-              errorMessage: "Il campo prezzo deve essere un numero",
+              rule: 'number',
+              errorMessage: 'Il campo prezzo deve essere un numero',
             },
           ])
-          .addField("#description", [
+          .addField('#description', [
             {
-              rule: "required",
-              errorMessage: "Il campo descrizione è obbligatorio",
+              rule: 'required',
+              errorMessage: 'Il campo descrizione è obbligatorio',
             },
           ])
         this.validation = validator
@@ -407,6 +416,7 @@ export default {
   async mounted() {
     this.user = await this.getUser()
     if (this.user) {
+      await this.loadCategories()
       await this.loadDataForDays()
       await this.loadTotal()
     }
@@ -421,7 +431,7 @@ export default {
 } */
 
 .result {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .calendar-button {
@@ -453,7 +463,7 @@ export default {
 
 .total-of-day {
   font-size: 12px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .form-select:focus {

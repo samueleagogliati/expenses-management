@@ -27,7 +27,8 @@
 </template>
 
 <script>
-import axios from "axios"
+import axios from 'axios'
+import callService from '../services/api'
 export default {
   data() {
     return {
@@ -39,12 +40,11 @@ export default {
       this.categories[index].color = color
     },
     saveColors() {
-      console.log("Colori salvati:", this.categories)
-      alert("Colori salvati con successo!")
+      console.log('Colori salvati:', this.categories)
+      alert('Colori salvati con successo!')
     },
     async loadData() {
-      let resp = await axios.get("http://localhost:5001/categories")
-      this.categories = resp.data
+      this.categories = await callService('categories.list', {})
     },
   },
   async mounted() {

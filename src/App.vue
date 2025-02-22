@@ -8,9 +8,10 @@
 </template>
 
 <script>
-import { jwtDecode } from "jwt-decode"
-import Navbar from "./pages/components/Navbar.vue"
-import axios from "axios"
+import { jwtDecode } from 'jwt-decode'
+import Navbar from './pages/components/Navbar.vue'
+import axios from 'axios'
+import callService from './services/api'
 export default {
   components: {
     Navbar,
@@ -27,7 +28,7 @@ export default {
       this.checkTokenValidity()
     },
     checkTokenValidity() {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem('token')
       if (!token) {
         return false
       }
@@ -39,9 +40,8 @@ export default {
       }
       return true
     },
-    async getUser(user_id) {
-      let resp = await axios.get("http://localhost:5001/users/" + user_id)
-      this.user = resp.data
+    async getUser(userId) {
+      this.user = await callService('users.getUser', { id: userId })
     },
   },
   mounted() {

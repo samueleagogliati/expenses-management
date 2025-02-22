@@ -89,6 +89,7 @@
 import axios from "axios"
 import JustValidate from "just-validate"
 import ErrorMessage from "./components/ErrorMessage.vue"
+
 export default {
   components: {
     ErrorMessage,
@@ -185,6 +186,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 body {
   font:
     100% / 1.414 "Open Sans",
@@ -244,7 +247,7 @@ label {
   border-radius: remy(35px);
   &:focus,
   &:hover {
-    background: lighten(#111, 13%);
+    background: color.adjust(#111, $lightness: 13%);
   }
 }
 
@@ -255,7 +258,7 @@ label {
   color: #999;
   &:focus,
   &:hover {
-    color: darken(#999, 13%);
+    color: color.adjust(#999, $lightness: -13%);
   }
 }
 </style>

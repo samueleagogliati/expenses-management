@@ -94,9 +94,9 @@
 </template>
 
 <script>
-import { defineComponent } from "vue"
-import VueApexCharts from "vue3-apexcharts"
-import axios from "axios"
+import { defineComponent } from 'vue'
+import VueApexCharts from 'vue3-apexcharts'
+import axios from 'axios'
 export default defineComponent({
   components: {
     apexchart: VueApexCharts,
@@ -121,20 +121,19 @@ export default defineComponent({
       chartOptions: {
         chart: {
           width: 50,
-          type: "pie",
+          type: 'pie',
         },
         labels: [],
         colors: [
-          "#007bff",
-          "#6610f2",
-          "#6f42c1",
-          "#dc3545",
-          "#fd7e14",
-          "#ffc107",
-          "#28a745",
-          "#20c997",
+          '#007bff',
+          '#6610f2',
+          '#6f42c1',
+          '#dc3545',
+          '#fd7e14',
+          '#ffc107',
+          '#28a745',
+          '#20c997',
         ],
-        //colors: ['#2C3E50', '#546E7A', '#757575', '#9E9E9E', '#B0BEC5', '#CFD8DC', '#455A64', '#607D8B'],
         responsive: [
           {
             breakpoint: 480,
@@ -156,10 +155,10 @@ export default defineComponent({
   },
   methods: {
     async searchWithFilters() {
-      var selectMonth = document.getElementById("monthSelect")
+      var selectMonth = document.getElementById('monthSelect')
       var selectedIndexMonth = selectMonth.selectedIndex
       var month = selectMonth.options[selectedIndexMonth].value
-      var selectYear = document.getElementById("yearSelect")
+      var selectYear = document.getElementById('yearSelect')
       var selectedIndexYear = selectYear.selectedIndex
       var year = selectYear.options[selectedIndexYear].value
       this.filters.year = year
@@ -168,20 +167,19 @@ export default defineComponent({
     },
     async loadData() {
       this.loading = false
-      let resp = await axios.post("http://locahost:5001/expenses_by_category", {
+      let resp = await axios.post('http://locahost:5001/expenses_by_category', {
         month: this.filters.month,
         year: this.filters.year,
         userId: this.user.id,
       })
       this.data = resp.data
-      console.log(this.data)
       this.series = resp.data.map((item) => parseInt(item.total))
       this.chartOptions.labels = resp.data.map((item) => item.description)
       var sum = 0
       resp.data.forEach((item) => {
         sum += parseFloat(item.total)
       })
-      this.sum_of_totals = sum.toFixed(2) + " €"
+      this.sum_of_totals = sum.toFixed(2) + ' €'
       this.loading = true
     },
     async showHideFilters() {

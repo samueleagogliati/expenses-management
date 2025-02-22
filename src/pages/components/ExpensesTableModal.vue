@@ -58,7 +58,8 @@
 </template>
 
 <script>
-import axios from "axios"
+import axios from 'axios'
+import callService from '../../services/api'
 export default {
   props: {
     expenses: {
@@ -68,20 +69,22 @@ export default {
   },
   methods: {
     formatPrice(value) {
-      return value + " €"
+      return value + ' €'
     },
-    async deleteExpense(expense_id) {
-      if (confirm("Sei sicuro di voler eliminare questa spesa?")) {
+    async deleteExpense(expenseId) {
+      if (confirm('Sei sicuro di voler eliminare questa spesa?')) {
         try {
-          let resp = await axios.delete(
-            "http://localhost:5001/expenses/" + expense_id,
-          )
+          let resp = await callService('expenses.deleteExpense', {
+            id: expenseId,
+          })
           if (resp.status === 200) {
-            alert("Spesa eliminata")
-            this.$emit("reloadExpenses")
+            alert(resp.message)
+            this.$emit('reloadExpenses')
+          } else {
+            alert(resp.message)
           }
         } catch (error) {
-          alert("Si è verificato un errore durante l'eliminazione dell'expense")
+          alert("Si è verificato un errore durante l'eliminazione della spesa")
           console.error("Errore durante l'eliminazione dell'expense:", error)
         }
       }
@@ -89,7 +92,7 @@ export default {
     editedExpense(expense) {
       expense.editMode = !expense.editMode
       if (!expense.editMode) {
-        this.$emit("editedExpense", expense)
+        this.$emit('editedExpense', expense)
       }
     },
   },
