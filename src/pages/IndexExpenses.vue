@@ -1,18 +1,28 @@
 <template>
   <div v-if="user" style="width: 95%; margin: 0 auto" class="mb-5">
-    <div class="form-check form-switch ms-3 mb-2">
-      <label class="form-check-label" for="show-filters" v-if="!showFilters"
-        >Mostra filtri</label
-      >
-      <label class="form-check-label" for="show-filters" v-else
-        >Nascondi filtri</label
-      >
-      <input
-        class="form-check-input"
-        type="checkbox"
-        id="show-filters"
-        @change="showHideFilters"
-      />
+    <div
+      class="form-check form-switch ms-3 mb-2 d-flex justify-content-between"
+    >
+      <div class="">
+        <label class="form-check-label" for="show-filters" v-if="!showFilters"
+          >Mostra filtri</label
+        >
+        <label class="form-check-label" for="show-filters" v-else
+          >Nascondi filtri</label
+        >
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="show-filters"
+          @change="showHideFilters"
+        />
+      </div>
+
+      <div>
+        <button @click="exportData" class="btn btn-primary ps-3 pe-3 me-3">
+          Esporta
+        </button>
+      </div>
     </div>
 
     <div class="row ms-2 mb-2 d-flex align-items-end" v-if="showFilters">
@@ -94,6 +104,20 @@ export default {
     },
   },
   methods: {
+    async exportData() {
+      let resp = await callService('exportData.exportToExcel', {
+        startDate: new Date(this.filters.year, this.filters.month - 1, 1),
+        endDate: new Date(this.filters.year, this.filters.month, 0),
+        userId: this.user.id,
+      })
+
+      this.$notify({
+        title: 'File Excel Generato',
+        message: `Il report è stato salvato nella cartella ${resp}"`,
+        dangerouslyUseHTMLString: true,
+        type: 'success',
+      })
+    },
     async loadData() {
       try {
         if (this.user) {

@@ -1,11 +1,13 @@
 import userService from '../services/userService.js'
 import expenseService from '../services/expenseService.js'
 import categoryService from '../services/categoryService.js'
+import exportData from '../services/exportData.js'
 
 const services = {
   users: userService,
   expenses: expenseService,
   categories: categoryService,
+  exportData: exportData,
 }
 
 const callService = async (serviceAction, params) => {
