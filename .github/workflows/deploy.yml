@@ -1,0 +1,34 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main  # Cambia con il nome del tuo branch, se non è 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SSH to Raspberry Pi and deploy
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.RASPBERRY_IP }}  # IP del tuo Raspberry Pi
+          username: sassa  # Nome utente sul Raspberry Pi
+          key: ${{ secrets.RASPBERRY_SSH_KEY }}  # Chiave SSH privata per il Raspberry Pi
+          script: |
+            # Vai nella cartella del progetto
+            cd ~/Desktop/expenses-management
+
+            # Fai il pull del codice più recente
+            git pull origin main
+
+            # Installa le dipendenze aggiornate
+            npm install
+
+            # Riavvia il server in modalità sviluppo
+            pm2 restart "expenses-management"  # Usa PM2 per riavviare il processo npm run dev
+
