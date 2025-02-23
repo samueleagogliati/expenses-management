@@ -12,7 +12,7 @@
 
     <div class="w-100 d-flex justify-content-center">
       <div class="result text-center my-3 py-2 bg-black text-white w-50 d">
-        Spese totali del mese: {{ total }} €
+        Spese totali del cazzo: {{ total }} €
       </div>
     </div>
 
