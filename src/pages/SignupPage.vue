@@ -86,9 +86,9 @@
 </template>
 
 <script>
-import axios from "axios"
-import JustValidate from "just-validate"
-import ErrorMessage from "./components/ErrorMessage.vue"
+import axios from 'axios'
+import JustValidate from 'just-validate'
+import ErrorMessage from './components/ErrorMessage.vue'
 
 export default {
   components: {
@@ -116,69 +116,69 @@ export default {
         email: this.email,
         password: this.password,
       }
-      let resp = await axios.post("http://localhost:5001/signup", params)
+      let resp = await axios.post('http://192.168.1.30:5001/signup', params)
       console.log(resp)
       if (resp.status === 201 || resp.status === 200) {
-        alert("Registrazione avvenuta con successo, effettuare il login")
-        this.$router.push("/login")
+        alert('Registrazione avvenuta con successo, effettuare il login')
+        this.$router.push('/login')
       } else {
         this.errorMessage =
-          "Registrazione non andata a buon fine, controllare i campi inseriti!"
+          'Registrazione non andata a buon fine, controllare i campi inseriti!'
       }
     },
   },
   mounted() {
-    const validator = new JustValidate("#signup-form", {
-      errorFieldCssClass: "is-invalid",
-      successFieldCssClass: "is-valid",
+    const validator = new JustValidate('#signup-form', {
+      errorFieldCssClass: 'is-invalid',
+      successFieldCssClass: 'is-valid',
       validateBeforeSubmitting: false,
     })
     validator
       .onFail((fields) => {
-        this.errorMessage = "Controllare i campi inseriti!"
+        this.errorMessage = 'Controllare i campi inseriti!'
       })
       .onSuccess((fields) => {
         this.register()
       })
-      .addField("#firstname", [
+      .addField('#firstname', [
         {
-          rule: "required",
-          errorMessage: "Il campo Nome è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo Nome è obbligatorio',
         },
       ])
-      .addField("#lastname", [
+      .addField('#lastname', [
         {
-          rule: "required",
-          errorMessage: "Il campo Cognome è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo Cognome è obbligatorio',
         },
       ])
-      .addField("#username", [
+      .addField('#username', [
         {
-          rule: "required",
-          errorMessage: "Il campo Username è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo Username è obbligatorio',
         },
       ])
-      .addField("#email", [
+      .addField('#email', [
         {
-          rule: "required",
-          errorMessage: "Il campo Email è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo Email è obbligatorio',
         },
         {
-          rule: "email",
-          errorMessage: "Deve essere in formato email",
+          rule: 'email',
+          errorMessage: 'Deve essere in formato email',
         },
       ])
-      .addField("#password", [
+      .addField('#password', [
         {
-          rule: "required",
-          errorMessage: "Il campo Password è obbligatorio",
+          rule: 'required',
+          errorMessage: 'Il campo Password è obbligatorio',
         },
         {
-          rule: "customRegexp",
+          rule: 'customRegexp',
           value:
             /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
           errorMessage:
-            "la password deve contenere: minimo otto caratteri, almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale.",
+            'la password deve contenere: minimo otto caratteri, almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale.',
         },
       ])
   },
@@ -186,12 +186,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
+@use 'sass:color';
 
 body {
   font:
-    100% / 1.414 "Open Sans",
-    "Roboto",
+    100% / 1.414 'Open Sans',
+    'Roboto',
     arial,
     sans-serif;
   background: #e9e9e9;
