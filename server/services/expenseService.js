@@ -1,4 +1,5 @@
 import Expense from '../models/expense.js'
+import Category from '../models/category.js'
 import moment from 'moment'
 
 const list = (userId, startDate, endDate) => {
@@ -29,6 +30,23 @@ export default {
     let collection = list(userId, startDate, endDate)
     collection.withGraphFetched('category')
     return collection
+  },
+
+  async getTotalByCategory({ userId, startDate, endDate }) {
+    let start = moment(startDate).startOf('day').toDate()
+    let end = moment(endDate).endOf('day').toDate()
+
+    let collection = Category.query()
+      .select('categories.id', 'categories.description')
+      .leftJoin('expenses', function () {
+        this.on('expenses.category_id', '=', 'categories.id')
+          .andOn('expenses.user_id', '=', userId)
+          .andOnBetween('expenses.date', [start, end])
+      })
+      .groupBy('categories.id', 'categories.description')
+      .orderBy('categories.description')
+      .sum('expenses.price as total')
+    return await collection
   },
 
   async createExpense(params) {

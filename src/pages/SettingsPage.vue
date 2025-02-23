@@ -6,18 +6,14 @@
     <div
       v-for="(category, index) in categories"
       :key="category.id"
-      class="category-item row align-items-center w-50"
+      class="category-item row align-items-center w-50 mt-2"
     >
       <div class="col-6 text-start">
         <span>{{ category.description }}</span>
       </div>
 
       <div class="col-3 text-center">
-        <input
-          type="color"
-          v-model="category.color"
-          @input="updateColor(index, $event.target.value)"
-        />
+        <input type="color" v-model="category.color" />
       </div>
     </div>
     <button @click="saveColors" class="btn btn-primary mt-4">
@@ -27,8 +23,8 @@
 </template>
 
 <script>
-import axios from 'axios'
 import callService from '../services/api'
+
 export default {
   data() {
     return {
@@ -36,17 +32,32 @@ export default {
     }
   },
   methods: {
-    updateColor(index, color) {
-      this.categories[index].color = color
+    async saveColors() {
+      try {
+        const updatedCategories = this.categories.map((category) => ({
+          id: category.id,
+          color: category.color,
+        }))
+
+        for (let i = 0; i < updatedCategories.length; i++) {
+          await callService('categories.updateCategory', updatedCategories[i])
+        }
+      } catch (error) {
+        console.error('Errore nel salvataggio dei colori:', error)
+        return
+      }
+      alert('Colori Aggiornati')
     },
-    saveColors() {
-      console.log('Colori salvati:', this.categories)
-      alert('Colori salvati con successo!')
-    },
+
     async loadData() {
-      this.categories = await callService('categories.list', {})
+      try {
+        this.categories = await callService('categories.list', {})
+      } catch (error) {
+        console.error('Errore nel caricamento delle categorie:', error)
+      }
     },
   },
+
   async mounted() {
     await this.loadData()
   },

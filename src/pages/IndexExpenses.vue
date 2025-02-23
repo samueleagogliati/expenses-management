@@ -1,5 +1,5 @@
 <template>
-  <div class="" v-if="user">
+  <div v-if="user" style="width: 95%; margin: 0 auto" class="mb-5">
     <div class="form-check form-switch ms-3 mb-2">
       <label class="form-check-label" for="show-filters" v-if="!showFilters"
         >Mostra filtri</label
@@ -61,6 +61,7 @@ import ExpensesTableVue from './components/ExpensesTable.vue'
 import axios from 'axios'
 import { format } from 'date-fns'
 import callService from '../services/api'
+import { MONTHS } from '../utils/constants'
 
 export default {
   components: {
@@ -78,24 +79,11 @@ export default {
       categories: null,
       noData: false,
       filters: {
-        month: null,
-        year: null,
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
       },
       showFilters: false,
-      months: [
-        'Gennaio',
-        'Febbraio',
-        'Marzo',
-        'Aprile',
-        'Maggio',
-        'Giugno',
-        'Luglio',
-        'Agosto',
-        'Settembre',
-        'Ottobre',
-        'Novembre',
-        'Dicembre',
-      ],
+      months: MONTHS,
       monthSelected: new Date().getMonth() + 1,
       yearSelected: new Date().getFullYear(),
     }
@@ -109,11 +97,12 @@ export default {
     async loadData() {
       try {
         if (this.user) {
-          const expenses = await callService('expenses.allExpenses', {
-            user_id: this.user.id,
-            month: this.filters.month,
-            year: this.filters.year,
+          let expenses = await callService('expenses.getListWithCategories', {
+            startDate: new Date(this.filters.year, this.filters.month - 1, 1),
+            endDate: new Date(this.filters.year, this.filters.month, 0),
+            userId: this.user.id,
           })
+
           const categories = await callService('categories.list', {})
           this.categories = categories
           this.expenses = expenses.map((item) => ({

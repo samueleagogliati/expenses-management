@@ -78,7 +78,6 @@ export default {
             id: expenseId,
           })
           if (resp.status === 200) {
-            alert(resp.message)
             this.$emit('reloadExpenses')
           } else {
             alert(resp.message)

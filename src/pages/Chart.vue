@@ -1,6 +1,9 @@
 <template>
   <main class="container mb-5">
-    <div class="form-check form-switch container ms-3 mb-2">
+    <div
+      class="form-check form-switch container ms-3 mb-2"
+      style="margin-top: 150px"
+    >
       <label class="form-check-label" for="show-filters" v-if="!showFilters"
         >Mostra filtri</label
       >
@@ -19,26 +22,21 @@
       <div class="col-md-3">
         <div class="form-group">
           <label for="monthSelect">Mese</label>
-          <select class="form-control" id="monthSelect">
-            <option value="1">Gennaio</option>
-            <option value="2">Febbraio</option>
-            <option value="3">Marzo</option>
-            <option value="4">Aprile</option>
-            <option value="5">Maggio</option>
-            <option value="6">Giugno</option>
-            <option value="7">Luglio</option>
-            <option value="8">Agosto</option>
-            <option value="9">Settembre</option>
-            <option value="10">Ottobre</option>
-            <option value="11">Novembre</option>
-            <option value="12">Dicembre</option>
+          <select class="form-control" id="monthSelect" v-model="filters.month">
+            <option
+              v-for="(month, index) in months"
+              :key="index"
+              :value="index + 1"
+            >
+              {{ month }}
+            </option>
           </select>
         </div>
       </div>
       <div class="col-md-2">
         <div class="form-group">
           <label for="yearSelect">Anno</label>
-          <select class="form-control" id="yearSelect">
+          <select class="form-control" id="yearSelect" v-model="filters.year">
             <option v-for="year in years" :key="year" :value="year">
               {{ year }}
             </option>
@@ -52,7 +50,7 @@
       </div>
     </div>
 
-    <div id="container-chart" style="height:">
+    <div id="container-chart">
       <div class="row w-100 mt-1">
         <div class="col d-flex justify-content-start">
           <table
@@ -68,11 +66,11 @@
             <tbody>
               <tr v-for="item in data" :key="item.description">
                 <td class="text-center">{{ item.description }}</td>
-                <td class="text-center">{{ item.total }} €</td>
+                <td class="text-center">{{ formatNumber(item.total) }}</td>
               </tr>
               <tr>
                 <th class="text-center bg-light">Totale periodo</th>
-                <th class="text-center bg-light">{{ sum_of_totals }}</th>
+                <th class="text-center bg-light">{{ sumOfTotals }} €</th>
               </tr>
             </tbody>
           </table>
@@ -97,6 +95,9 @@
 import { defineComponent } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import axios from 'axios'
+import { MONTHS } from '../utils/constants'
+import callService from '../services/api'
+
 export default defineComponent({
   components: {
     apexchart: VueApexCharts,
@@ -111,11 +112,12 @@ export default defineComponent({
     return {
       showFilters: false,
       filters: {
-        month: null,
-        year: null,
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1,
       },
+      months: MONTHS,
       data: null,
-      sum_of_totals: null,
+      sumOfTotals: null,
       loading: false,
       series: [],
       chartOptions: {
@@ -155,49 +157,54 @@ export default defineComponent({
   },
   methods: {
     async searchWithFilters() {
-      var selectMonth = document.getElementById('monthSelect')
-      var selectedIndexMonth = selectMonth.selectedIndex
-      var month = selectMonth.options[selectedIndexMonth].value
-      var selectYear = document.getElementById('yearSelect')
-      var selectedIndexYear = selectYear.selectedIndex
-      var year = selectYear.options[selectedIndexYear].value
-      this.filters.year = year
-      this.filters.month = month
       await this.loadData()
     },
     async loadData() {
       this.loading = false
-      let resp = await axios.post('http://locahost:5001/expenses_by_category', {
-        month: this.filters.month,
-        year: this.filters.year,
+
+      let categories = await callService('categories.list', {})
+      this.chartOptions.colors = categories.map((c) => c.color)
+
+      let resp = await callService('expenses.getTotalByCategory', {
         userId: this.user.id,
+        startDate: new Date(this.filters.year, this.filters.month - 1, 1),
+        endDate: new Date(this.filters.year, this.filters.month, 0),
       })
-      this.data = resp.data
-      this.series = resp.data.map((item) => parseInt(item.total))
-      this.chartOptions.labels = resp.data.map((item) => item.description)
+
+      this.data = resp
+      this.series = resp.map((item) =>
+        item.total ? parseFloat(item.total) : 0,
+      )
+      this.chartOptions.labels = resp.map((item) => item.description)
       var sum = 0
-      resp.data.forEach((item) => {
-        sum += parseFloat(item.total)
+      resp.forEach((item) => {
+        let tot = item.total || 0
+        sum += parseFloat(tot)
       })
-      this.sum_of_totals = sum.toFixed(2) + ' €'
+      this.sumOfTotals = this.formatNumber(sum)
       this.loading = true
     },
     async showHideFilters() {
       this.showFilters = !this.showFilters
     },
+    formatNumber(value) {
+      value = value || 0
+      const number = parseFloat(value)
+      if (number % 1 === 0) {
+        return parseInt(number)
+      }
+      return number.toFixed(2)
+    },
   },
   computed: {
     years() {
       let currentYear = new Date().getFullYear()
-      return [
-        currentYear - 3,
-        currentYear - 2,
-        currentYear - 1,
-        currentYear,
-        currentYear + 1,
-        currentYear + 2,
-        currentYear + 3,
-      ]
+      currentYear = Number(currentYear)
+      let years = []
+      for (let i = currentYear - 2; i <= currentYear + 3; i++) {
+        years.push(i)
+      }
+      return years
     },
   },
   async mounted() {

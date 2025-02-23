@@ -92,7 +92,6 @@ export default {
             id: expenseId,
           })
           if (resp.status === 200) {
-            alert(resp.message)
             window.location.reload()
           } else {
             alert(resp.message)

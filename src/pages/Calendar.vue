@@ -31,11 +31,9 @@
           {{ day }}
         </button>
         <div class="total-of-day text-center">
-          <span
-            style="padding: 1px"
-            v-if="total_of_days && total_of_days[day - 1]"
-            >({{ total_of_days[day - 1].total || 0 }}€)</span
-          >
+          <span style="padding: 2px" v-if="totalOfDays && totalOfDays[day - 1]"
+            >{{ formatNumber(totalOfDays[day - 1]) }}
+          </span>
         </div>
       </div>
     </div>
@@ -192,7 +190,7 @@ export default {
       showSelect: false,
       expenses: [],
       categories: [],
-      total_of_days: [],
+      totalOfDays: [],
       typeMessage: null,
       message: null,
       showAlertMessage: false,
@@ -226,6 +224,15 @@ export default {
     },
   },
   methods: {
+    formatNumber(value) {
+      let total = value.total
+      if (!total) return '-'
+      const number = parseFloat(total)
+      if (number % 1 === 0) {
+        return parseInt(number) + '€'
+      }
+      return number.toFixed(2) + '€'
+    },
     resetModal() {
       if (this.validation != null) this.validation.destroy()
     },
@@ -249,7 +256,7 @@ export default {
         (_, i) => i + 1,
       )
 
-      this.total_of_days = allDays.map((day) => {
+      this.totalOfDays = allDays.map((day) => {
         let dayResult = results.find((r) => new Date(r.date).getDate() === day)
 
         return {
@@ -337,9 +344,9 @@ export default {
         user_id: this.user.id,
       })
       if (response.status === 200) {
-        this.showAlertMessage = true
-        this.message = response.message
-        this.typeMessage = 'success'
+        // this.showAlertMessage = true
+        // this.message = response.message
+        // this.typeMessage = 'success'
         this.showSelect = false
         await this.loadExpenses()
         setTimeout(() => {
@@ -462,7 +469,7 @@ export default {
 }
 
 .total-of-day {
-  font-size: 12px;
+  font-size: 15px;
   font-family: 'Courier New', Courier, monospace;
 }
 
