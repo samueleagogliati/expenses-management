@@ -31,18 +31,53 @@ export default {
       }
 
       worksheet.columns = [
-        { header: 'Categoria', key: 'category', width: 20 },
-        { header: 'Descrizione', key: 'description', width: 30 },
-        { header: 'Prezzo', key: 'price', width: 15 },
-        { header: 'Data', key: 'date', width: 15 },
+        { header: 'Categoria', key: 'category', width: 45 },
+        { header: 'Descrizione', key: 'description', width: 60 },
+        { header: 'Prezzo', key: 'price', width: 30 },
+        { header: 'Data', key: 'date', width: 30 },
       ]
 
+      worksheet.getRow(1).height = 20
+
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'D3D3D3' },
+        }
+        cell.font = {
+          bold: true,
+          size: 15,
+        }
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        }
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+        }
+      })
+
       expenses.forEach((e) => {
-        worksheet.addRow({
+        const row = worksheet.addRow({
           category: e.category.description,
           description: e.description,
           price: e.price,
           date: format(new Date(e.date), 'dd/MM/yyyy'),
+        })
+
+        row.height = 20
+        row.eachCell((cell) => {
+          cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center',
+          }
+          cell.font = {
+            size: 13,
+          }
         })
       })
 
@@ -52,6 +87,19 @@ export default {
         description: '',
         price: total,
         date: '',
+      })
+
+      worksheet.getRow(worksheet.lastRow.number - 1).height = 20
+      worksheet.getRow(worksheet.lastRow.number).height = 20
+      worksheet.getRow(worksheet.lastRow.number).eachCell((cell) => {
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+        }
+        cell.font = {
+          bold: true,
+          size: 13,
+        }
       })
 
       const reportsFolderPath = path.join(__dirname, 'exports')

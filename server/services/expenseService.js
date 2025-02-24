@@ -28,7 +28,7 @@ export default {
 
   async getListWithCategories({ userId, startDate, endDate }) {
     let collection = list(userId, startDate, endDate)
-    collection.withGraphFetched('category')
+    collection.withGraphFetched('category').orderBy('date')
     return collection
   },
 
