@@ -113,12 +113,6 @@ export default {
 
       if (resp.url) {
         const fullUrl = `http://${window.location.hostname}:5001${resp.url}`
-        this.$notify({
-          title: 'File Excel Generato',
-          message: `Il report è stato generato"`,
-          dangerouslyUseHTMLString: true,
-          type: 'success',
-        })
         window.open(fullUrl, '_blank')
       } else {
         this.$notify({
