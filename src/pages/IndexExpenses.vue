@@ -111,12 +111,23 @@ export default {
         userId: this.user.id,
       })
 
-      this.$notify({
-        title: 'File Excel Generato',
-        message: `Il report è stato salvato nella cartella ${resp}"`,
-        dangerouslyUseHTMLString: true,
-        type: 'success',
-      })
+      if (resp.url) {
+        const fullUrl = `http://${window.location.hostname}:5001${resp.url}`
+        this.$notify({
+          title: 'File Excel Generato',
+          message: `Il report è stato generato"`,
+          dangerouslyUseHTMLString: true,
+          type: 'success',
+        })
+        window.open(fullUrl, '_blank')
+      } else {
+        this.$notify({
+          title: 'File Excel Generato',
+          message: `Errore durante la generazione del report"`,
+          dangerouslyUseHTMLString: true,
+          type: 'error',
+        })
+      }
     },
     async loadData() {
       try {
