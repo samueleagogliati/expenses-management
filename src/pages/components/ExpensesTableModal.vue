@@ -13,12 +13,23 @@
       <tbody>
         <tr v-for="(expense, index) in expenses" :key="index">
           <td class="align-middle">
-            <input
-              v-if="expense.editMode"
-              v-model="expense.category"
-              class="form-control"
-            />
-            <span v-else>{{ expense.category }}</span>
+            <div class="control-wrapper" v-if="expense.editMode">
+              <select
+                class="form-select"
+                @change="selectOption(expense, $event)"
+                v-model="expense.category.id"
+              >
+                <option value="">Seleziona la categoria</option>
+                <option
+                  v-for="category in categories"
+                  :value="category.id"
+                  :key="category.id"
+                >
+                  {{ category.description }}
+                </option>
+              </select>
+            </div>
+            <span v-else>{{ expense.category.description }}</span>
           </td>
           <td class="align-middle">
             <input
@@ -58,16 +69,33 @@
 </template>
 
 <script>
-import axios from 'axios'
 import callService from '../../services/api'
 export default {
+  data() {
+    return {
+      selectedCategory: null,
+    }
+  },
   props: {
     expenses: {
       type: Array,
       default: () => [],
     },
+    categories: {
+      type: Array,
+      default: () => [],
+    },
   },
   methods: {
+    selectOption(expense, event) {
+      const selectedCategoryId = event.target.value
+      const selectedCategory = this.categories.find(
+        (cat) => cat.id == selectedCategoryId,
+      )
+      if (selectedCategory) {
+        expense.category = { ...selectedCategory }
+      }
+    },
     formatPrice(value) {
       return value + ' €'
     },
@@ -91,6 +119,7 @@ export default {
     editedExpense(expense) {
       expense.editMode = !expense.editMode
       if (!expense.editMode) {
+        expense.category_id = expense.category.id
         this.$emit('editedExpense', expense)
       }
     },

@@ -70,6 +70,7 @@
                   class="mb-3"
                   v-if="expenses.length > 0"
                   @editedExpense="editExpense"
+                  :categories="categories"
                 ></ExpensesTableModal>
 
                 <a
@@ -98,6 +99,7 @@
                     class="form-select"
                     id="category"
                     @change="selectOption"
+                    v-model="selectedCategory"
                   >
                     <option value="">Seleziona la categoria</option>
                     <option
@@ -199,6 +201,7 @@ export default {
       validation: null,
       isSaving: false,
       disabledSaveButton: true,
+      selectedCategory: null,
     }
   },
   props: {},
@@ -324,7 +327,7 @@ export default {
 
       this.expenses = resp.map((item) => ({
         id: item?.id,
-        category: item.category?.description,
+        category: item.category,
         description: item?.description,
         price: item?.price,
       }))
@@ -333,7 +336,7 @@ export default {
       this.categories = await callService('categories.list', {})
     },
     async saveExpense() {
-      let category_id = $('#category').prop('selectedIndex')
+      let category_id = this.selectedCategory
       let description = $('#description').val()
       let price = $('#price').val()
       let response = await callService('expenses.createExpense', {
