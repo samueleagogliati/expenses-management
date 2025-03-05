@@ -78,7 +78,7 @@ export default {
   },
   methods: {
     printDebt(debt) {
-      return `${debt.payer} deve a ${debt.receiver} ${price}€`
+      return `${debt.payer} deve a ${debt.receiver} ${debt.price}€`
     },
     toggleDirection() {
       this.direction = this.direction === 'to' ? 'from' : 'to'
