@@ -1,40 +1,46 @@
-import { createRouter, createWebHistory } from "vue-router"
-import IndexExpenses from "../../src/pages/IndexExpenses.vue"
-import Calendar from "../../src/pages/Calendar.vue"
-import LoginPage from "../../src/pages/LoginPage.vue"
-import SignupPage from "../../src/pages/SignupPage.vue"
-import Chart from "../../src/pages/Chart.vue"
-import SettingsPage from "../../src/pages/SettingsPage.vue"
+import { createRouter, createWebHistory } from 'vue-router'
+import IndexExpenses from '../../src/pages/IndexExpenses.vue'
+import Calendar from '../../src/pages/Calendar.vue'
+import LoginPage from '../../src/pages/LoginPage.vue'
+import SignupPage from '../../src/pages/SignupPage.vue'
+import Chart from '../../src/pages/Chart.vue'
+import SettingsPage from '../../src/pages/SettingsPage.vue'
+import Debts from '../../src/pages/Debts.vue'
 
-import { jwtDecode } from "jwt-decode"
+import { jwtDecode } from 'jwt-decode'
 
 const routes = [
   {
-    path: "/expenses",
+    path: '/expenses',
     component: IndexExpenses,
     meta: { requiresAuth: true },
   },
   {
-    path: "/",
+    path: '/',
     component: Calendar,
     meta: { requiresAuth: true },
   },
   {
-    path: "/login",
+    path: '/login',
     component: LoginPage,
   },
   {
-    path: "/signup",
+    path: '/signup',
     component: SignupPage,
   },
   {
-    path: "/chart",
+    path: '/chart',
     component: Chart,
     meta: { requiresAuth: true },
   },
   {
-    path: "/settings",
+    path: '/settings',
     component: SettingsPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/debts',
+    component: Debts,
     meta: { requiresAuth: true },
   },
 ]
@@ -45,7 +51,7 @@ const router = createRouter({
 })
 
 function checkTokenValidity() {
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem('token')
   if (!token) {
     return false
   }
@@ -63,8 +69,8 @@ router.beforeEach((to, from, next) => {
     if (isTokenValid) {
       next()
     } else {
-      alert("Effettuare il login!")
-      next("/login")
+      alert('Effettuare il login!')
+      next('/login')
     }
   } else {
     next()

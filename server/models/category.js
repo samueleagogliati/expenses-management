@@ -1,9 +1,9 @@
-import { Model } from "objection"
-import Expense from "./expense.js"
+import { Model } from 'objection'
+import Expense from './expense.js'
 
 class Category extends Model {
   static get tableName() {
-    return "categories"
+    return 'categories'
   }
 
   static get relationMappings() {
@@ -12,8 +12,8 @@ class Category extends Model {
         relation: Model.HasManyRelation,
         modelClass: Expense,
         join: {
-          from: "categories.id",
-          to: "expenses.category_id",
+          from: 'categories.id',
+          to: 'expenses.category_id',
         },
       },
     }
