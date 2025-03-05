@@ -52,6 +52,12 @@
       </div>
     </div>
   </div>
+
+  <div class="debts-list">
+    <div class="row" v-for="(debt, index) in debts" :key="index">
+      <p>{{ printDebt(debt) }}</p>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -65,9 +71,15 @@ export default {
       direction: 'to',
       payer: 'Samu',
       receiver: 'Est',
+      debts: [
+        { payer: 'Samu', receiver: 'Est', price: 5, description: 'diocane' },
+      ],
     }
   },
   methods: {
+    printDebt(debt) {
+      return `${debt.payer} deve a ${debt.receiver} ${price}€`
+    },
     toggleDirection() {
       this.direction = this.direction === 'to' ? 'from' : 'to'
       ;[this.payer, this.receiver] = [this.receiver, this.payer]
