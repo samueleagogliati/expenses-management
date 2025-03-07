@@ -170,7 +170,6 @@ import JustValidate from 'just-validate'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { it } from 'date-fns/locale'
 import $ from 'jquery'
-import axios from 'axios'
 import ExpensesTableModal from './components/ExpensesTableModal.vue'
 import AlertMessage from './components/AlertMessage.vue'
 import { jwtDecode } from 'jwt-decode'
@@ -435,11 +434,6 @@ export default {
 </script>
 
 <style scoped>
-/* .month
-{
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-} */
-
 .result {
   font-family: 'Courier New', Courier, monospace;
 }

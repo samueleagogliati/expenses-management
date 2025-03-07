@@ -36,6 +36,9 @@
           <li class="nav-item">
             <router-link class="nav-link" to="/chart">Statistiche</router-link>
           </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/debts">Debiti</router-link>
+          </li>
         </ul>
 
         <!-- Sezione Login/Registrazione/Logout -->
@@ -60,7 +63,7 @@
 
 <script>
 export default {
-  name: "Navbar",
+  name: 'Navbar',
   props: {
     userLogged: {
       type: Boolean,
@@ -73,8 +76,8 @@ export default {
   },
   methods: {
     logout() {
-      localStorage.removeItem("token")
-      alert("Logout effettuato")
+      localStorage.removeItem('token')
+      alert('Logout effettuato')
       window.location.reload()
     },
   },
