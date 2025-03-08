@@ -12,7 +12,7 @@ export default {
       if (!payer || !receiver || !price || !description) {
         throw new Error('Tutti i campi sono obbligatori')
       }
-      const newExpense = await Debt.query().insert({
+      const newDebt = await Debt.query().insert({
         payer,
         receiver,
         price,
@@ -23,7 +23,7 @@ export default {
       return {
         status: 200,
         message: 'Debito inserito',
-        data: newExpense,
+        data: newDebt,
       }
     } catch (error) {
       return { status: 500, message: 'Errore: ' + error.message }
@@ -35,7 +35,7 @@ export default {
       const deletedCount = await Debt.query().deleteById(id)
 
       if (deletedCount === 0) {
-        throw new Error('Spesa non trovata')
+        throw new Error('Debito non trovato')
       }
 
       return { status: 200, message: 'Debito eliminato' }

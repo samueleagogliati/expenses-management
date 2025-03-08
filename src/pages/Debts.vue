@@ -1,5 +1,10 @@
 <template>
-  <div style="position: relative; left: 20px; top: 100px">
+  <button
+    style="position: relative; left: 20px; top: 100px"
+    class="btn"
+    data-bs-toggle="modal"
+    data-bs-target="#notesModal"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
@@ -11,7 +16,6 @@
           transform 0.2s ease,
           fill 0.3s;
       "
-      @click="openNoteModal"
       class="note-icon"
     >
       <path
@@ -19,10 +23,72 @@
         d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 1.99 2 1.99h14c1.1 0 1.99-.9 1.99-2V5c0-1.1-.9-2-2-2zM5 19V5h14v14H5zm7-2h4v-2h-4v2zm-2-3h6v-2H10v2zm-2-3h8v-2H8v2z"
       />
     </svg>
+  </button>
+
+  <div
+    class="modal fade"
+    id="notesModal"
+    tabindex="-1"
+    aria-labelledby="dayModal"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content" style="min-height: 80vh">
+        <div class="modal-header w-100">
+          <h3
+            class="h-100 w-100 align-content-center text-center"
+            id="notesModalLabel"
+          >
+            Note
+          </h3>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group list-group-flush">
+            <li
+              v-for="(note, index) in notes"
+              :key="index"
+              class="list-group-item d-flex align-items-center fs-5"
+            >
+              <div
+                class="d-flex w-100 justify-content-between align-items-center"
+              >
+                <input
+                  v-if="note.editMode"
+                  v-model="note.description"
+                  class="form-control me-3"
+                />
+                <span v-else>{{ note.description }}</span>
+
+                <div>
+                  <button
+                    @click="toggleEditMode(note)"
+                    class="btn mx-1"
+                    type="button"
+                  >
+                    <i v-if="!note.editMode" class="fa-solid fa-pencil"></i>
+                    <i v-else class="fa-solid fa-check"></i>
+                  </button>
+
+                  <button @click="deleteNote(note)" class="btn" type="button">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="d-flex justify-content-center" style="margin-top: 100px">
-    <div class="card p-4 shadow" style="width: 60%">
+    <div class="card p-4 shadow" style="width: 60%" @keyup.enter="saveDebt">
       <div class="card-body text-center">
         <div class="d-flex justify-content-around align-items-center">
           <span
@@ -86,7 +152,7 @@
           class="m-0 fs-6"
           :class="{ 'text-decoration-line-through': debt.disabled }"
         >
-          {{ printDebt(debt) }}
+          {{ printDebt(debt) }} <b>{{ debt.description }}</b>
         </p>
       </div>
       <div class="col-auto d-flex">
@@ -126,15 +192,19 @@ export default {
       payer: 'Samu',
       receiver: 'Est',
       debts: [],
+      notes: [],
     }
   },
   methods: {
+    toggleEditMode(note) {
+      note.editMode = !note.editMode
+    },
     async toggleDisabled(debt) {
       debt.disabled = !debt.disabled
       await callService('debts.updateDebt', debt)
     },
     printDebt(debt) {
-      return `${debt.payer} deve a ${debt.receiver} ${debt.price}€ di ${debt.description}`
+      return `${debt.payer} deve a ${debt.receiver} ${debt.price}€ di`
     },
     toggleDirection() {
       this.direction = this.direction === 'to' ? 'from' : 'to'
@@ -164,7 +234,9 @@ export default {
     },
     async loadData() {
       this.debts = await callService('debts.list', {})
-      // this.notes = await callService('notes.list', {})
+      this.notes = (await callService('notes.list', {})).map((n) => {
+        return { ...n, editMode: false }
+      })
     },
   },
   async mounted() {

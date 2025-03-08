@@ -3,6 +3,7 @@ import expenseService from '../services/expenseService.js'
 import categoryService from '../services/categoryService.js'
 import exportData from '../services/exportData.js'
 import debtService from '../services/debtService.js'
+import noteService from '../services/noteService.js'
 
 const services = {
   users: userService,
@@ -10,6 +11,7 @@ const services = {
   categories: categoryService,
   exportData: exportData,
   debts: debtService,
+  notes: noteService,
 }
 
 const callService = async (serviceAction, params) => {

@@ -12,6 +12,8 @@ import { jwtDecode } from 'jwt-decode'
 import Navbar from './pages/components/Navbar.vue'
 import axios from 'axios'
 import callService from './services/api'
+import 'bootstrap-icons/font/bootstrap-icons.css'
+
 export default {
   components: {
     Navbar,
