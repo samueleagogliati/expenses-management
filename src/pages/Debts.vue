@@ -33,14 +33,9 @@
     aria-hidden="true"
   >
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
-      <div class="modal-content" style="min-height: 80vh">
+      <div class="modal-content" style="min-height: 70vh">
         <div class="modal-header w-100">
-          <h3
-            class="h-100 w-100 align-content-center text-center"
-            id="notesModalLabel"
-          >
-            Note
-          </h3>
+          <h3 class="h-100 w-100 align-content-center text-center">Note</h3>
           <button
             type="button"
             class="btn-close"
@@ -53,35 +48,45 @@
             <li
               v-for="(note, index) in notes"
               :key="index"
-              class="list-group-item d-flex align-items-center fs-5"
+              class="d-flex align-items-center fs-5 py-2"
             >
               <div
                 class="d-flex w-100 justify-content-between align-items-center"
               >
-                <input
-                  v-if="note.editMode"
-                  v-model="note.description"
-                  class="form-control me-3"
-                />
-                <span v-else>{{ note.description }}</span>
-
-                <div>
+                <div class="input-group w-100">
+                  <input
+                    class="form-control"
+                    type="text"
+                    v-model="note.description"
+                    @focus="note.editMode = true"
+                  />
                   <button
-                    @click="toggleEditMode(note)"
-                    class="btn mx-1"
-                    type="button"
+                    v-if="note.editMode"
+                    @click="updateNote(note)"
+                    class="btn"
                   >
-                    <i v-if="!note.editMode" class="fa-solid fa-pencil"></i>
-                    <i v-else class="fa-solid fa-check"></i>
+                    <i class="fa-solid fa-check text-dark"></i>
                   </button>
-
-                  <button @click="deleteNote(note)" class="btn" type="button">
-                    <i class="fa-solid fa-trash"></i>
+                  <button @click="deleteNote(note)" class="btn">
+                    <i class="fa-solid fa-trash text-danger"></i>
                   </button>
                 </div>
               </div>
             </li>
           </ul>
+        </div>
+
+        <div class="modal-footer" @keyup.enter="addNote">
+          <div class="input-group">
+            <input
+              v-model="newNoteDescription"
+              class="form-control py-2 fs-5"
+              placeholder="Aggiungi nota"
+            />
+            <button @click="addNote" class="btn py-2 btn-dark">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -111,7 +116,6 @@
         </div>
 
         <div class="input-group mb-3 mt-5">
-          <span class="input-group-text" style="width: 20%">Prezzo</span>
           <input
             v-model="price"
             autocomplete="off"
@@ -119,15 +123,16 @@
             type="text"
             class="form-control"
             style="width: 15%"
+            placeholder="Prezzo"
           />
           <input
             v-model="description"
             autocomplete="off"
             id="description"
             type="text"
-            class="form-control"
+            class="form-control ms-5"
             style="width: 65%"
-            placeholder="Descrizione spesa"
+            placeholder="Descrizione"
           />
         </div>
 
@@ -172,16 +177,19 @@
 
   <div class="mt-5 d-flex justify-content-center">
     <button
+      v-if="debts.length"
       class="text-center btn btn-danger mt-3 px-4 py-2 text-uppercase"
       @click="deleteDisabledDebt"
     >
-      Elimina spese completate
+      Elimina righe completate
     </button>
   </div>
 </template>
 
 <script>
 import callService from '../services/api'
+import { jwtDecode } from 'jwt-decode'
+
 export default {
   name: 'Debts',
   data() {
@@ -193,12 +201,11 @@ export default {
       receiver: 'Est',
       debts: [],
       notes: [],
+      newNoteDescription: null,
+      user: {},
     }
   },
   methods: {
-    toggleEditMode(note) {
-      note.editMode = !note.editMode
-    },
     async toggleDisabled(debt) {
       debt.disabled = !debt.disabled
       await callService('debts.updateDebt', debt)
@@ -238,14 +245,43 @@ export default {
         return { ...n, editMode: false }
       })
     },
+    async deleteNote(note) {
+      await callService('notes.deleteNote', { id: note.id })
+      await this.loadData()
+    },
+    async updateNote(note) {
+      let params = {
+        id: note.id,
+        description: note.description,
+        user_id: note.user_id,
+      }
+      await callService('notes.updateNote', params)
+      await this.loadData()
+    },
+    async addNote() {
+      let params = {
+        description: this.newNoteDescription,
+        user_id: this.user.id,
+      }
+      await callService('notes.createNote', params)
+      this.newNoteDescription = null
+      await this.loadData()
+    },
+    async loadUser() {
+      const token = localStorage.getItem('token')
+      const decodedToken = jwtDecode(token)
+      let resp = await callService('users.getUser', { id: decodedToken.id })
+      this.user = resp
+    },
   },
   async mounted() {
+    await this.loadUser()
     await this.loadData()
   },
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 body {
   font-family: Arial, sans-serif;
   background-color: #f8f9fa;
@@ -270,5 +306,18 @@ body {
 .note-icon:hover {
   transform: scale(1.1);
   fill: #1e88e5;
+}
+
+.form-control {
+  background-color: transparent;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+  &:focus {
+    border-color: #111;
+    outline: none;
+    box-shadow: none;
+  }
 }
 </style>

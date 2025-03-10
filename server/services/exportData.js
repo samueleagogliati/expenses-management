@@ -9,21 +9,19 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default {
-  async exportToExcel({ userId, startDate, endDate }) {
+  async exportToExcel({ userId, expensesIds }) {
     try {
       const workbook = new ExcelJS.Workbook()
       const worksheet = workbook.addWorksheet('Expenses')
 
-      let expenses = await expenseService.getListWithCategories({
+      let expenses = await expenseService.getListByIds({
         userId,
-        startDate,
-        endDate,
+        expensesIds,
       })
 
-      let total = await expenseService.getTotalOfPeriod({
-        userId,
-        startDate,
-        endDate,
+      let total = 0
+      expenses.forEach((expense) => {
+        total += Number(expense.price)
       })
 
       if (expenses.length === 0) {
@@ -85,7 +83,7 @@ export default {
       worksheet.addRow({
         category: 'TOTALE',
         description: '',
-        price: total,
+        price: total.toFixed(2) + '€',
         date: '',
       })
 

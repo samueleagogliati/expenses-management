@@ -58,6 +58,7 @@
     </div>
 
     <ExpensesTableVue
+      ref="expensesTable"
       v-if="expenses && expenses.length"
       :expenses="expenses"
       :categories="categories"
@@ -105,10 +106,14 @@ export default {
   },
   methods: {
     async exportData() {
+      let filteredRows =
+        this.$refs.expensesTable.$refs.table.$refs.goodTable.filteredRows[0]
+          ?.children
+
+      const filteredRowsIds = filteredRows.map((fr) => fr.id)
       let resp = await callService('exportData.exportToExcel', {
-        startDate: new Date(this.filters.year, this.filters.month - 1, 1),
-        endDate: new Date(this.filters.year, this.filters.month, 0),
         userId: this.user.id,
+        expensesIds: filteredRowsIds,
       })
 
       if (resp.url) {

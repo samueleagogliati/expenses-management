@@ -20,6 +20,13 @@ export default {
     return result[0]?.total || 0
   },
 
+  async getListByIds({ userId, expensesIds }) {
+    return await Expense.query()
+      .whereIn('expenses.id', expensesIds)
+      .where('user_id', userId)
+      .withGraphFetched('category')
+  },
+
   async getTotalOfDays({ userId, startDate, endDate }) {
     let collection = list(userId, startDate, endDate)
     collection.select('date').sum('price as total').groupBy('date')

@@ -1,6 +1,7 @@
 <template>
   <div>
     <VueGoodTable
+      ref="goodTable"
       max-height="100%"
       max-width="100%"
       :columns="columns"
@@ -97,8 +98,8 @@ export default {
             alert(resp.message)
           }
         } catch (error) {
-          alert("Si è verificato un errore durante l'eliminazione dell'expense")
-          console.error("Errore durante l'eliminazione dell'expense:", error)
+          alert("Si è verificato un errore durante l'eliminazione della spesa")
+          console.error("Errore durante l'eliminazione della spesa: ", error)
         }
       }
     },
@@ -111,9 +112,5 @@ export default {
   td {
     padding: 0 10px;
   }
-}
-
-:deep(.vgt-wrap__footer) {
-  background-color: red;
 }
 </style>
