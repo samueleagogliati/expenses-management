@@ -73,7 +73,7 @@ export default {
           username: this.username,
           password: this.password,
         }
-        let resp = await axios.post('http://192.168.1.30:5001/login', params)
+        let resp = await axios.post('http://expenses-server:5001/login', params)
         let token = resp.data.token
         localStorage.setItem('token', 'Bearer' + token)
         if (resp.status === 200) {

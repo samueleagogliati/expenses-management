@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const callService = async (serviceAction, params) => {
   try {
-    const response = await axios.post('http://192.168.1.30:5001/service', {
+    const response = await axios.post('http://expenses-server:5001/service', {
       serviceAction,
       params,
     })

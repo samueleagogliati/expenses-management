@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    container_name: expenses-db
+    environment:
+      MYSQL_ROOT_PASSWORD: sassa
+      MYSQL_DATABASE: expenses_management
+    ports:
+      - '3306:3306'
+    volumes:
+      - db-data:/var/lib/mysql
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expenses-server
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: sassa
+      DB_NAME: expenses_management
+    ports:
+      - '5001:5001'
+    depends_on:
+      - db
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: expenses-client
+    ports:
+      - '5173:5173'
+    depends_on:
+      - server
+
+volumes:
+  db-data: {}
