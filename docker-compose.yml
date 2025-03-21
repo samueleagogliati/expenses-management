@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: mysql:8
+    image: mariadb:latest
     container_name: expenses-db
     environment:
       MYSQL_ROOT_PASSWORD: sassa
