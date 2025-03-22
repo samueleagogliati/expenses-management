@@ -11,6 +11,8 @@ services:
       - '3306:3306'
     volumes:
       - db-data:/var/lib/mysql
+    networks:
+      - expenses-network
 
   server:
     build:
@@ -27,6 +29,8 @@ services:
       - '5001:5001'
     depends_on:
       - db
+    networks:
+      - expenses-network
 
   client:
     build:
@@ -37,6 +41,12 @@ services:
       - '5173:5173'
     depends_on:
       - server
+    networks:
+      - expenses-network
 
 volumes:
   db-data: {}
+
+networks:
+  expenses-network:
+    driver: bridge
