@@ -73,8 +73,7 @@ export default {
           username: this.username,
           password: this.password,
         }
-        let resp = await axios.post('http://expenses-server:5001/login', params)
-        console.log('diocane', resp)
+        let resp = await axios.post('http://172.18.0.3:5001/login', params)
         let token = resp.data.token
         localStorage.setItem('token', 'Bearer' + token)
         if (resp.status === 200) {
