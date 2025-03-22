@@ -3,8 +3,8 @@ import Category from '../models/category.js'
 import moment from 'moment'
 
 const list = (userId, startDate, endDate) => {
-  let start = moment(startDate).startOf('day').toDate()
-  let end = moment(endDate).endOf('day').toDate()
+  let start = moment(startDate).startOf('day').format('YYYY-MM-DD')
+  let end = moment(endDate).endOf('day').format('YYYY-MM-DD')
   let collection = Expense.query()
     .where('user_id', userId)
     .whereBetween('date', [start, end])
