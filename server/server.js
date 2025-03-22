@@ -28,7 +28,13 @@ knex
 const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors())
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://192.168.1.30:5173'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+  }),
+)
 app.options('*', cors())
 
 const PORT = process.env.PORT || 5001
