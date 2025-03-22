@@ -5,6 +5,9 @@ import moment from 'moment'
 const list = (userId, startDate, endDate) => {
   let start = moment(startDate).startOf('day').format('YYYY-MM-DD')
   let end = moment(endDate).endOf('day').format('YYYY-MM-DD')
+
+  console.log('diocane1', start)
+  console.log('diocane2', end)
   let collection = Expense.query()
     .where('user_id', userId)
     .whereBetween('date', [start, end])
