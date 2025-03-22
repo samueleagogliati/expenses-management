@@ -30,7 +30,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(
   cors({
-    origin: ['http://expenses-server:5173', 'http://192.168.1.30:5173'],
+    origin: ['/api', 'http://192.168.1.30:5173'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
   }),
