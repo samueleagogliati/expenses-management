@@ -11,10 +11,6 @@ services:
       - '3306:3306'
     volumes:
       - db-data:/var/lib/mysql
-    healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      interval: 10s
-      retries: 5
 
   server:
     build:
@@ -30,8 +26,7 @@ services:
     ports:
       - '5001:5001'
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   client:
     build:
