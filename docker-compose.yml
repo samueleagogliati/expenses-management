@@ -7,8 +7,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: sassa
       MYSQL_DATABASE: expenses_management
-    ports:
-      - '3306:3306'
+    expose:
+      - '3306'
     volumes:
       - db-data:/var/lib/mysql
     networks:
@@ -25,8 +25,8 @@ services:
       DB_USER: root
       DB_PASSWORD: sassa
       DB_NAME: expenses_management
-    ports:
-      - '5001:5001'
+    expose:
+      - '5001'
     depends_on:
       - db
     networks:
