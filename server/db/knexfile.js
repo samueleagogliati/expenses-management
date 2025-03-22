@@ -1,14 +1,3 @@
-// const knexConfig = {
-//   client: 'mysql2',
-//   connection: {
-//     host: 'expenses-server',
-//     user: 'root',
-//     password: 'sassa',
-//     database: 'expenses_management',
-//   },
-// }
-// export default knexConfig
-
 const knexConfig = {
   client: 'mysql2',
   connection: {
