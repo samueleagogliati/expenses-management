@@ -174,6 +174,7 @@ import ExpensesTableModal from './components/ExpensesTableModal.vue'
 import AlertMessage from './components/AlertMessage.vue'
 import { jwtDecode } from 'jwt-decode'
 import callService from '../services/api'
+import moment from 'moment'
 
 export default {
   name: 'Calendar',
@@ -240,11 +241,12 @@ export default {
     },
     async loadDataForDays() {
       let date = new Date(this.currentDate)
-
+      let startDate = new Date(date.getFullYear(), date.getMonth(), 1)
+      let endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
       let results = await callService('expenses.getTotalOfDays', {
         userId: this.user.id,
-        startDate: new Date(date.getFullYear(), date.getMonth(), 1),
-        endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+        startDate: moment(startDate).format('YYYY-MM-DD'),
+        endDate: moment(endDate).format('YYYY-MM-DD'),
       })
 
       let allDays = Array.from(
@@ -270,11 +272,13 @@ export default {
     async loadTotal() {
       let date = new Date(this.currentDate)
       let userId = this.user.id
+      let startDate = new Date(date.getFullYear(), date.getMonth(), 1)
+      let endDate = new Date(date.getFullYear(), date.getMonth() + 1)
       try {
         this.total = await callService('expenses.getTotalOfPeriod', {
           userId,
-          startDate: new Date(date.getFullYear(), date.getMonth(), 1),
-          endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+          startDate: moment(startDate).format('YYYY-MM-DD'),
+          endDate: moment(endDate).format('YYYY-MM-DD'),
         })
       } catch (error) {
         console.error('Errore durante il caricamento del totale:', error)
