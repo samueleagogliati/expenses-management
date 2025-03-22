@@ -116,7 +116,7 @@ export default {
         email: this.email,
         password: this.password,
       }
-      let resp = await axios.post('http://172.18.0.3/signup', params)
+      let resp = await axios.post('http://expenses-server/signup', params)
       console.log(resp)
       if (resp.status === 201 || resp.status === 200) {
         alert('Registrazione avvenuta con successo, effettuare il login')
