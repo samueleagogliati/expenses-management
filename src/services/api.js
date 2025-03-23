@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const callService = async (serviceAction, params) => {
   try {
-    const response = await axios.post('/api/service', {
+    const response = await axios.post('http://localhost:5001/service', {
       serviceAction,
       params,
     })

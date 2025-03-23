@@ -116,7 +116,7 @@ export default {
         email: this.email,
         password: this.password,
       }
-      let resp = await axios.post('/api/signup', params)
+      let resp = await axios.post('http://localhost:5001/signup', params)
       console.log(resp)
       if (resp.status === 201 || resp.status === 200) {
         alert('Registrazione avvenuta con successo, effettuare il login')
