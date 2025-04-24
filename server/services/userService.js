@@ -28,12 +28,20 @@ export default {
       email,
       password: hashedPassword,
     })
-    return { message: 'Utente registrato con successo', user: newUser }
+    return {
+      message: 'Utente registrato con successo',
+      user: newUser,
+      success: true,
+    }
   },
 
   async getUser({ id }) {
     const user = await User.query().findById(id)
     if (!user) throw new Error('Utente non trovato')
     return user
+  },
+
+  async list() {
+    return await User.query()
   },
 }

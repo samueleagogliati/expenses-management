@@ -77,7 +77,7 @@ export default {
   methods: {
     logout() {
       localStorage.removeItem('token')
-      alert('Logout effettuato')
+      alert(' effettuato')
       window.location.reload()
     },
   },

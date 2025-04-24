@@ -1,46 +1,26 @@
 <template>
   <main class="container mb-5">
-    <div
-      class="form-check form-switch container ms-3 mb-2"
-      style="margin-top: 150px"
-    >
-      <label class="form-check-label" for="show-filters" v-if="!showFilters"
-        >Mostra filtri</label
-      >
-      <label class="form-check-label" for="show-filters" v-else
-        >Nascondi filtri</label
-      >
-      <input
-        class="form-check-input"
-        type="checkbox"
-        id="show-filters"
-        @change="showHideFilters"
-      />
-    </div>
-
-    <div class="row container mb-2 d-flex align-items-end" v-if="showFilters">
+    <div class="row container mb-2 d-flex align-items-end">
       <div class="col-md-3">
         <div class="form-group">
-          <label for="monthSelect">Mese</label>
-          <select class="form-control" id="monthSelect" v-model="filters.month">
-            <option
-              v-for="(month, index) in months"
-              :key="index"
-              :value="index + 1"
-            >
-              {{ month }}
-            </option>
-          </select>
+          <label for="startDate">Da</label>
+          <input
+            type="date"
+            class="form-control"
+            id="startDate"
+            v-model="filters.startDate"
+          />
         </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="form-group">
-          <label for="yearSelect">Anno</label>
-          <select class="form-control" id="yearSelect" v-model="filters.year">
-            <option v-for="year in years" :key="year" :value="year">
-              {{ year }}
-            </option>
-          </select>
+          <label for="endDate">A</label>
+          <input
+            type="date"
+            class="form-control"
+            id="endDate"
+            v-model="filters.endDate"
+          />
         </div>
       </div>
       <div class="col-md-2">
@@ -94,9 +74,12 @@
 <script>
 import { defineComponent } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
-import axios from 'axios'
-import { MONTHS } from '../utils/constants'
 import callService from '../services/api'
+import { MONTHS } from '../utils/constants'
+
+function formatDateLocal(date) {
+  return date.toLocaleDateString('sv-SE') // "YYYY-MM-DD"
+}
 
 export default defineComponent({
   components: {
@@ -109,11 +92,16 @@ export default defineComponent({
     },
   },
   data() {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = today.getMonth()
+    const firstDay = formatDateLocal(new Date(year, month, 1))
+    const lastDay = formatDateLocal(new Date(year, month + 1, 0))
+
     return {
-      showFilters: false,
       filters: {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() + 1,
+        startDate: firstDay,
+        endDate: lastDay,
       },
       months: MONTHS,
       data: null,
@@ -151,7 +139,7 @@ export default defineComponent({
     }
   },
   watch: {
-    async user(oldValue, newValue) {
+    async user() {
       await this.loadData()
     },
   },
@@ -167,8 +155,8 @@ export default defineComponent({
 
       let resp = await callService('expenses.getTotalByCategory', {
         userId: this.user.id,
-        startDate: new Date(this.filters.year, this.filters.month - 1, 1),
-        endDate: new Date(this.filters.year, this.filters.month, 0),
+        startDate: this.filters.startDate,
+        endDate: this.filters.endDate,
       })
 
       this.data = resp
@@ -176,16 +164,14 @@ export default defineComponent({
         item.total ? parseFloat(item.total) : 0,
       )
       this.chartOptions.labels = resp.map((item) => item.description)
-      var sum = 0
+
+      let sum = 0
       resp.forEach((item) => {
         let tot = item.total || 0
         sum += parseFloat(tot)
       })
       this.sumOfTotals = this.formatNumber(sum)
       this.loading = true
-    },
-    async showHideFilters() {
-      this.showFilters = !this.showFilters
     },
     formatNumber(value) {
       value = value || 0
@@ -194,17 +180,6 @@ export default defineComponent({
         return parseInt(number)
       }
       return number.toFixed(2)
-    },
-  },
-  computed: {
-    years() {
-      let currentYear = new Date().getFullYear()
-      currentYear = Number(currentYear)
-      let years = []
-      for (let i = currentYear - 2; i <= currentYear + 3; i++) {
-        years.push(i)
-      }
-      return years
     },
   },
   async mounted() {

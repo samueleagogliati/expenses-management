@@ -184,10 +184,10 @@ export default {
   },
   data() {
     return {
-      items: [{ title: 'ciao' }],
+      items: [],
       total: 0,
       selectedDate: null,
-      currentDate: new Date(),
+      currentDate: moment().startOf('day').toDate(),
       selectedDay: null,
       showSelect: false,
       expenses: [],
@@ -204,21 +204,16 @@ export default {
       selectedCategory: null,
     }
   },
-  props: {},
   computed: {
     currentMonth() {
       const monthName = format(this.currentDate, 'MMMM', { locale: it })
       const capitalizedMonthName =
         monthName.charAt(0).toUpperCase() + monthName.slice(1)
-      return (
-        capitalizedMonthName +
-        ' ' +
-        format(this.currentDate, 'yyyy', { locale: it })
-      )
+      return `${capitalizedMonthName} ${format(this.currentDate, 'yyyy', { locale: it })}`
     },
     days() {
-      const startDate = startOfMonth(this.currentDate)
-      const endDate = endOfMonth(this.currentDate)
+      const startDate = moment(this.currentDate).startOf('month').toDate()
+      const endDate = moment(this.currentDate).endOf('month').toDate()
       const allDaysOfMonth = eachDayOfInterval({
         start: startDate,
         end: endDate,
@@ -228,57 +223,44 @@ export default {
   },
   methods: {
     formatNumber(value) {
-      let total = value.total
-      if (!total) return '-'
-      const number = parseFloat(total)
-      if (number % 1 === 0) {
-        return parseInt(number) + '€'
-      }
-      return number.toFixed(2) + '€'
+      const number = parseFloat(value.total)
+      if (!number) return '-'
+      return number % 1 === 0 ? `${parseInt(number)}€` : `${number.toFixed(2)}€`
     },
     resetModal() {
-      if (this.validation != null) this.validation.destroy()
+      if (this.validation) this.validation.destroy()
     },
     async loadDataForDays() {
-      let date = new Date(this.currentDate)
-      let startDate = new Date(date.getFullYear(), date.getMonth(), 1)
-      let endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-      let results = await callService('expenses.getTotalOfDays', {
+      const startDate = moment(this.currentDate)
+        .startOf('month')
+        .format('YYYY-MM-DD')
+      const endDate = moment(this.currentDate)
+        .endOf('month')
+        .format('YYYY-MM-DD')
+      const results = await callService('expenses.getTotalOfDays', {
         userId: this.user.id,
-        startDate: moment(startDate).format('YYYY-MM-DD'),
-        endDate: moment(endDate).format('YYYY-MM-DD'),
+        startDate,
+        endDate,
       })
 
-      let allDays = Array.from(
-        {
-          length: new Date(
-            date.getFullYear(),
-            date.getMonth() + 1,
-            0,
-          ).getDate(),
-        },
-        (_, i) => i + 1,
-      )
-
-      this.totalOfDays = allDays.map((day) => {
-        let dayResult = results.find((r) => new Date(r.date).getDate() === day)
-
-        return {
-          day: day,
-          total: dayResult ? dayResult.total : 0,
-        }
+      const daysInMonth = moment(this.currentDate).daysInMonth()
+      this.totalOfDays = Array.from({ length: daysInMonth }, (_, i) => {
+        const result = results.find((r) => moment(r.date).date() === i + 1)
+        return { day: i + 1, total: result ? result.total : 0 }
       })
     },
     async loadTotal() {
-      let date = new Date(this.currentDate)
-      let userId = this.user.id
-      let startDate = new Date(date.getFullYear(), date.getMonth(), 1)
-      let endDate = new Date(date.getFullYear(), date.getMonth() + 1)
+      const startDate = moment(this.currentDate)
+        .startOf('month')
+        .format('YYYY-MM-DD')
+      const endDate = moment(this.currentDate)
+        .endOf('month')
+        .format('YYYY-MM-DD')
       try {
         this.total = await callService('expenses.getTotalOfPeriod', {
-          userId,
-          startDate: moment(startDate).format('YYYY-MM-DD'),
-          endDate: moment(endDate).format('YYYY-MM-DD'),
+          userId: this.user.id,
+          startDate,
+          endDate,
         })
       } catch (error) {
         console.error('Errore durante il caricamento del totale:', error)
@@ -286,14 +268,10 @@ export default {
       }
     },
     goToPreviousMonth() {
-      const previousMonth = new Date(this.currentDate)
-      previousMonth.setMonth(previousMonth.getMonth() - 1)
-      this.currentDate = previousMonth
+      this.currentDate = moment(this.currentDate).subtract(1, 'month').toDate()
     },
     goToNextMonth() {
-      const nextMonth = new Date(this.currentDate)
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-      this.currentDate = nextMonth
+      this.currentDate = moment(this.currentDate).add(1, 'month').toDate()
     },
     async editExpense(expense) {
       await callService('expenses.updateExpense', {
@@ -309,9 +287,10 @@ export default {
       $('#description').val('')
       $('#price').val('')
       this.showSelect = false
-      const currentMonth = this.currentDate.getMonth()
-      const currentYear = this.currentDate.getFullYear()
-      this.selectedDate = new Date(currentYear, currentMonth, day)
+      this.selectedDate = moment(this.currentDate)
+        .date(day)
+        .startOf('day')
+        .toDate()
       this.selectedDay = 'Dettaglio ' + format(this.selectedDate, 'dd/MM/yyyy')
       await this.loadExpenses()
     },
@@ -322,10 +301,10 @@ export default {
       })
     },
     async loadExpenses() {
-      let resp = await callService('expenses.getListWithCategories', {
+      const resp = await callService('expenses.getListWithCategories', {
         userId: this.user.id,
-        startDate: this.selectedDate,
-        endDate: this.selectedDate,
+        startDate: moment(this.selectedDate).format('YYYY-MM-DD'),
+        endDate: moment(this.selectedDate).format('YYYY-MM-DD'),
       })
 
       this.expenses = resp.map((item) => ({
@@ -339,47 +318,36 @@ export default {
       this.categories = await callService('categories.list', {})
     },
     async saveExpense() {
-      let category_id = this.selectedCategory
-      let description = $('#description').val()
-      let price = $('#price').val()
-      let response = await callService('expenses.createExpense', {
-        category_id: category_id,
-        description: description,
-        price: price,
-        date: this.selectedDate,
+      const response = await callService('expenses.createExpense', {
+        category_id: this.selectedCategory,
+        description: $('#description').val(),
+        price: $('#price').val(),
+        date: moment(this.selectedDate).format('YYYY-MM-DD'),
         user_id: this.user.id,
       })
+
       if (response.status === 200) {
-        // this.showAlertMessage = true
-        // this.message = response.message
-        // this.typeMessage = 'success'
         this.showSelect = false
         await this.loadExpenses()
-        setTimeout(() => {
-          this.showAlertMessage = false
-        }, 2000)
+        setTimeout(() => (this.showAlertMessage = false), 2000)
       }
     },
     async getUser() {
       const token = localStorage.getItem('token')
       const decodedToken = jwtDecode(token)
-      let resp = await callService('users.getUser', { id: decodedToken.id })
-      return resp
+      return await callService('users.getUser', { id: decodedToken.id })
     },
     loadValidation() {
-      if (this.validation != null) {
-        this.validation.destroy()
-      }
+      if (this.validation) this.validation.destroy()
       if (this.showSelect) {
-        let validator = new JustValidate('#form-expenses', {
+        this.validation = new JustValidate('#form-expenses', {
           errorFieldCssClass: 'is-invalid',
           successFieldCssClass: 'is-valid',
         })
-        validator
-          .onFail((fields) => {
+          .onFail(() => {
             this.errorMessage = 'Controllare i campi inseriti'
           })
-          .onSuccess(async (fields, event) => {
+          .onSuccess(async () => {
             await this.saveExpense()
           })
           .addField('#category', [
@@ -404,7 +372,6 @@ export default {
               errorMessage: 'Il campo descrizione è obbligatorio',
             },
           ])
-        this.validation = validator
       }
     },
   },
@@ -424,7 +391,6 @@ export default {
     showSelect(oldValue, newValue) {
       this.disabledSaveButton = !this.disabledSaveButton
     },
-    disabledSaveButton(oldValue, newValue) {},
   },
   async mounted() {
     this.user = await this.getUser()

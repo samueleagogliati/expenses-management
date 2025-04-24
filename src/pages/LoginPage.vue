@@ -46,8 +46,8 @@
 
 <script>
 import ErrorMessage from './components/ErrorMessage.vue'
-import axios from 'axios'
 import JustValidate from 'just-validate'
+import callService from '../services/api'
 export default {
   components: {
     ErrorMessage,
@@ -73,17 +73,17 @@ export default {
           username: this.username,
           password: this.password,
         }
-        let resp = await axios.post('http://192.168.1.30:5001/login', params)
-        let token = resp.data.token
+        let resp = await callService('users.login', params)
+        let token = resp?.token
         localStorage.setItem('token', 'Bearer' + token)
-        if (resp.status === 200) {
+        if (resp.success) {
           this.$emit('login')
           this.$router.push('/')
         } else {
           this.errorMessage = 'Credenziali non valide, riprova!'
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
+        if (error) {
           this.errorMessage = 'Credenziali non valide, riprova!'
         } else {
           this.errorMessage =

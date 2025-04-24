@@ -2,19 +2,19 @@ import Debt from '../models/debt.js'
 
 export default {
   async list() {
-    return await Debt.query()
+    return await Debt.query().withGraphFetched('[payer, receiver]')
   },
 
   async createDebt(params) {
     try {
-      const { payer, receiver, price, description, disabled } = params
+      const { payer_id, receiver_id, price, description, disabled } = params
 
-      if (!payer || !receiver || !price || !description) {
+      if (!payer_id || !receiver_id || !price || !description) {
         throw new Error('Tutti i campi sono obbligatori')
       }
       const newDebt = await Debt.query().insert({
-        payer,
-        receiver,
+        payer_id,
+        receiver_id,
         price,
         description,
         disabled,

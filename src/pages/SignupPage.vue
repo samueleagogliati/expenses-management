@@ -89,6 +89,7 @@
 import axios from 'axios'
 import JustValidate from 'just-validate'
 import ErrorMessage from './components/ErrorMessage.vue'
+import callService from '../services/api'
 
 export default {
   components: {
@@ -116,9 +117,8 @@ export default {
         email: this.email,
         password: this.password,
       }
-      let resp = await axios.post('http://192.168.1.30:5001/signup', params)
-      console.log(resp)
-      if (resp.status === 201 || resp.status === 200) {
+      let resp = await callService('users.signup', params)
+      if (resp.success) {
         alert('Registrazione avvenuta con successo, effettuare il login')
         this.$router.push('/login')
       } else {

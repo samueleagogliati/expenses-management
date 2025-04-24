@@ -75,7 +75,6 @@
             </li>
           </ul>
         </div>
-
         <div class="modal-footer" @keyup.enter="addNote">
           <div class="input-group">
             <input
@@ -96,23 +95,47 @@
     <div class="card p-4 shadow" style="width: 60%" @keyup.enter="saveDebt">
       <div class="card-body text-center">
         <div class="d-flex justify-content-around align-items-center">
-          <span
-            class="input-group-text w-25 d-flex justify-content-center align-items-center text-uppercase fw-bold"
-          >
-            {{ payer }}
-          </span>
+          <template v-if="direction === 'to'">
+            <span
+              class="form-select w-25 d-flex align-items-center justify-content-center text-uppercase fw-bold"
+            >
+              {{ user.firstname }}
+            </span>
+          </template>
+          <template v-else>
+            <select class="form-select w-25" v-model="payer" :value="payer?.id">
+              <option v-for="user in users" :value="user" :key="user.id">
+                {{ user.firstname }}
+              </option>
+            </select>
+          </template>
+
           <button
             @click="toggleDirection"
-            class="btn btn-outline-secondary d-flex align-items-center justify-content-center p-0"
-            style="width: 38px; height: 38px"
+            class="btn btn-outline-secondary d-flex align-items-center justify-content-center mx-3"
+            style="width: 48px; height: 48px"
           >
             <i class="fa-duotone fa-solid fa-arrow-right-arrow-left"></i>
           </button>
-          <span
-            class="input-group-text w-25 d-flex justify-content-center align-items-center text-uppercase fw-bold"
-          >
-            {{ receiver }}
-          </span>
+
+          <template v-if="direction === 'to'">
+            <select
+              class="form-select w-25"
+              v-model="receiver"
+              :value="receiver?.id"
+            >
+              <option v-for="user in users" :value="user" :key="user.id">
+                {{ user.firstname }}
+              </option>
+            </select>
+          </template>
+          <template v-else>
+            <span
+              class="form-select w-25 d-flex align-items-center justify-content-center text-uppercase fw-bold"
+            >
+              {{ user.firstname }}
+            </span>
+          </template>
         </div>
 
         <div class="input-group mb-3 mt-5">
@@ -197,12 +220,13 @@ export default {
       price: null,
       description: null,
       direction: 'to',
-      payer: 'Samu',
-      receiver: 'Est',
+      payer: null,
+      receiver: null,
       debts: [],
       notes: [],
       newNoteDescription: null,
       user: {},
+      users: [],
     }
   },
   methods: {
@@ -211,18 +235,20 @@ export default {
       await callService('debts.updateDebt', debt)
     },
     printDebt(debt) {
-      return `${debt.payer} deve a ${debt.receiver} ${debt.price}€ di`
+      return `${debt.payer.firstname} deve a ${debt.receiver.firstname} ${debt.price}€ di`
     },
     toggleDirection() {
       this.direction = this.direction === 'to' ? 'from' : 'to'
-      ;[this.payer, this.receiver] = [this.receiver, this.payer]
+      const temp = this.receiver
+      this.receiver = this.payer
+      this.payer = temp
     },
     async saveDebt() {
       await callService('debts.createDebt', {
         price: this.price,
         description: this.description,
-        payer: this.payer,
-        receiver: this.receiver,
+        payer_id: this.payer?.id || this.user.id,
+        receiver_id: this.receiver?.id || this.user.id,
         disabled: false,
       })
       await this.loadData()
@@ -230,9 +256,7 @@ export default {
       this.description = null
     },
     async deleteDebt(debt) {
-      await callService('debts.deleteDebt', {
-        id: debt.id,
-      })
+      await callService('debts.deleteDebt', { id: debt.id })
       await this.loadData()
     },
     async deleteDisabledDebt() {
@@ -244,6 +268,8 @@ export default {
       this.notes = (await callService('notes.list', {})).map((n) => {
         return { ...n, editMode: false }
       })
+      this.payer = this.user
+      this.receiver = this.users[0]
     },
     async deleteNote(note) {
       await callService('notes.deleteNote', { id: note.id })
@@ -273,9 +299,14 @@ export default {
       let resp = await callService('users.getUser', { id: decodedToken.id })
       this.user = resp
     },
+    async loadUsers() {
+      let resp = await callService('users.list', {})
+      this.users = resp.filter((user) => user.id != this.user.id)
+    },
   },
   async mounted() {
     await this.loadUser()
+    await this.loadUsers()
     await this.loadData()
   },
 }
