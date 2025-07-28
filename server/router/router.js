@@ -1,18 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import IndexExpenses from '../../src/pages/IndexExpenses.vue'
+import Expenses from '../../src/pages/Expenses.vue'
 import Calendar from '../../src/pages/Calendar.vue'
 import LoginPage from '../../src/pages/LoginPage.vue'
 import SignupPage from '../../src/pages/SignupPage.vue'
 import Chart from '../../src/pages/Chart.vue'
 import SettingsPage from '../../src/pages/SettingsPage.vue'
 import Debts from '../../src/pages/Debts.vue'
+import Groups from '../../src/pages/Groups.vue'
 
 import { jwtDecode } from 'jwt-decode'
 
 const routes = [
   {
     path: '/expenses',
-    component: IndexExpenses,
+    component: Expenses,
     meta: { requiresAuth: true },
   },
   {
@@ -42,6 +43,11 @@ const routes = [
     path: '/debts',
     component: Debts,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/groups',
+    component: Groups,
+    meta: { requiresAuth: false },
   },
 ]
 

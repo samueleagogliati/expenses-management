@@ -1,11 +1,17 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 const knexConfig = {
-  client: 'mysql2',
+  client: process.env.DB_CLIENT,
   connection: {
-    host: 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'sassa',
-    database: process.env.DB_NAME || 'expenses_management',
-    port: process.env.DB_PORT || 3306,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DATABASE,
+    port: process.env.DB_PORT,
+  },
+  migrations: {
+    directory: './migrations',
   },
 }
 

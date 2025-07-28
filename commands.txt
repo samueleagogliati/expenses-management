@@ -1,0 +1,9 @@
+npx knex --knexfile ./db/knexfile.js migrate:make create_group_users_table
+
+npx knex --knexfile ./db/knexfile.js migrate:latest
+
+npx knex --knexfile ./db/knexfile.js migrate:rollback
+
+npm run migrate:make -- nome_migrazione
+
+npm run migrate
