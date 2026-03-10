@@ -11,7 +11,7 @@ export default {
     const token = jwt.sign(
       { id: user.id, username: user.username },
       'sassasamu',
-      { expiresIn: '60m' },
+      { expiresIn: '1y' },
     )
     return { success: true, token }
   },
