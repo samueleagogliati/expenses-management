@@ -1,61 +1,68 @@
 import Note from '../models/note.js'
 
 export default {
-  async list() {
+  async list(params) {
+    if (!params.user_id) {
+      return []
+    }
     return await Note.query()
+      .where('user_id', params.user_id)
+      .orderBy('id', 'asc')
   },
 
   async createNote(params) {
     try {
       if (!params.description || !params.user_id) {
-        throw new Error('Tutti i campi sono obbligatori')
+        return { success: false, message: 'Descrizione o utente mancante.' }
       }
-      const newNote = await Note.query().insert(params)
-
-      return {
-        status: 200,
-        message: 'Nota inserita',
-        data: newNote,
-      }
+      await Note.query().insert(params)
+      return { success: true, message: 'Nota creata con successo.' }
     } catch (error) {
-      return { status: 500, message: 'Errore: ' + error.message }
+      return {
+        success: false,
+        message: 'Errore nella creazione della nota: ' + error.message,
+      }
     }
   },
 
-  async deleteNote({ id }) {
+  async deleteNote(params) {
     try {
-      const deletedCount = await Note.query().deleteById(id)
-
-      if (deletedCount === 0) {
-        throw new Error('Nota non trovata')
+      const { id } = params
+      if (!id) {
+        return { success: false, message: 'ID della nota mancante.' }
       }
-
-      return { status: 200, message: 'Nota eliminata' }
+      const deletedCount = await Note.query().deleteById(id)
+      if (deletedCount === 0) {
+        return { success: false, message: 'Nota non trovata.' }
+      }
+      return { success: true, message: 'Nota eliminata con successo.' }
     } catch (error) {
-      return { status: 500, message: 'Errore: ' + error.message }
+      return {
+        success: false,
+        message: "Errore nell'eliminazione della nota: " + error.message,
+      }
     }
   },
 
   async updateNote(params) {
     try {
       const { id, ...updatedFields } = params
-
       if (!id) {
-        throw new Error('ID mancante')
+        return { success: false, message: 'ID della nota mancante.' }
       }
-      const debt = await Note.query().findById(id)
-      if (!debt) {
-        throw new Error('Nota non trovata')
-      }
-
-      const updatedDebt = await Note.query().patchAndFetchById(
+      const updatedCount = await Note.query().patchAndFetchById(
         id,
         updatedFields,
       )
-
-      return { status: 200, message: 'Nota aggiornata', data: updatedDebt }
+      if (!updatedCount) {
+        return { success: false, message: 'Nota non trovata.' }
+      }
+      return { success: true, message: 'Nota aggiornata con successo.' }
     } catch (error) {
-      return { status: 500, message: 'Errore: ' + error.message }
+      return {
+        success: false,
+        message: "Errore nell'aggiornamento della nota: " + error.message,
+      }
     }
   },
 }

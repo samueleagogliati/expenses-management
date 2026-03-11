@@ -1,0 +1,99 @@
+/* Navbar moderna e responsive */
+.navbar {
+  /* Effetto vetro */
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  /* Ombra leggera per staccarla dal contenuto */
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.5rem;
+  transition: all 0.3s ease-in-out;
+
+  /* Sticky top se desiderato */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Brand/Logo */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #ffffff !important;
+  letter-spacing: -0.5px;
+}
+
+/* Link di navigazione */
+.nav-link {
+  color: #ffffff !important;
+  font-weight: 500;
+  margin: 0 0.5rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #3182ce !important; /* Colore primario al passaggio */
+}
+
+/* Animazione sottolineatura (solo desktop) */
+@media (min-width: 992px) {
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: #3182ce;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    width: 100%;
+  }
+}
+
+/* Toggler (Hamburger menu) personalizzato */
+.navbar-toggler {
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Ottimizzazioni Mobile */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: white;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .nav-item {
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .nav-link {
+    padding: 0.75rem 0;
+    margin: 0;
+    color: #4a5568 !important; /* Colore scuro per i link su mobile */
+  }
+}

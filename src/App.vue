@@ -1,6 +1,7 @@
 <template>
   <Navbar :userLogged="userLogged" :user="user"></Navbar>
   <router-view
+    v-if="!userLogged || user"
     @login="loginDone"
     :user="user"
     style="margin-top: 80px"

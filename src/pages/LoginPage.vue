@@ -1,7 +1,12 @@
 <template>
   <div class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="login-container p-4">
-      <form id="login-form" novalidate="novalidate">
+      <validated-form
+        form-id="login-form"
+        :fields="validationFields"
+        @success="login"
+        @fail="showValidationError"
+      >
         <div class="form-group control-wrapper">
           <label class="input-label" for="username">Username</label>
           <div class="input-wrapper">
@@ -37,7 +42,7 @@
         <div class="d-flex justify-content-center">
           <button type="submit" class="btn--form">Login</button>
         </div>
-      </form>
+      </validated-form>
     </div>
   </div>
 
@@ -46,11 +51,13 @@
 
 <script>
 import ErrorMessage from './components/ErrorMessage.vue'
-import JustValidate from 'just-validate'
+import ValidatedForm from './components/ValidatedForm.vue'
 import callService from '../services/api'
+import { toast } from 'vue3-toastify'
 export default {
   components: {
     ErrorMessage,
+    ValidatedForm,
   },
   data() {
     return {
@@ -95,35 +102,34 @@ export default {
       this.errorMessage = null
     },
   },
+  computed: {
+    validationFields() {
+      return [
+        {
+          selector: '#username',
+          rules: [
+            {
+              rule: 'required',
+              errorMessage: 'Il campo username è obbligatorio',
+            },
+          ],
+        },
+        {
+          selector: '#password',
+          rules: [
+            {
+              rule: 'required',
+              errorMessage: 'Il campo password è obbligatorio',
+            },
+          ],
+        },
+      ]
+    },
+  },
   watch: {
     user(newValue, oldValue) {},
   },
-  mounted() {
-    const validator = new JustValidate('#login-form', {
-      errorFieldCssClass: 'is-invalid',
-      successFieldCssClass: 'is-valid',
-      validateBeforeSubmitting: true,
-    })
-    validator
-      .onFail((fields) => {
-        this.errorMessage = 'Controllare i campi inseriti'
-      })
-      .onSuccess((fields) => {
-        this.login()
-      })
-      .addField(document.querySelector('#username'), [
-        {
-          rule: 'required',
-          errorMessage: 'Il campo username è obbligatorio',
-        },
-      ])
-      .addField(document.querySelector('#password'), [
-        {
-          rule: 'required',
-          errorMessage: 'Il campo password è obbligatorio',
-        },
-      ])
-  },
+  mounted() {},
 }
 </script>
 

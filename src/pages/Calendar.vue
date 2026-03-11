@@ -182,6 +182,12 @@ export default {
     ExpensesTableModal,
     AlertMessage,
   },
+  props: {
+    user: {
+      type: Object,
+      default: null,
+    },
+  },
   data() {
     return {
       items: [],
@@ -196,7 +202,6 @@ export default {
       typeMessage: null,
       message: null,
       showAlertMessage: false,
-      user: null,
       editedExpenses: [],
       validation: null,
       isSaving: false,
@@ -332,11 +337,6 @@ export default {
         setTimeout(() => (this.showAlertMessage = false), 2000)
       }
     },
-    async getUser() {
-      const token = localStorage.getItem('token')
-      const decodedToken = jwtDecode(token)
-      return await callService('users.getUser', { id: decodedToken.id })
-    },
     loadValidation() {
       if (this.validation) this.validation.destroy()
       if (this.showSelect) {
@@ -393,7 +393,6 @@ export default {
     },
   },
   async mounted() {
-    this.user = await this.getUser()
     if (this.user) {
       await this.loadCategories()
       await this.loadDataForDays()

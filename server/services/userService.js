@@ -36,7 +36,12 @@ export default {
   },
 
   async getUser({ id }) {
-    const user = await User.query().findById(id)
+    const user = await User.query()
+      .findById(id)
+      .withGraphFetched('groups')
+      .modifyGraph('groups', (builder) => {
+        builder.select('groups.id', 'name')
+      })
     if (!user) throw new Error('Utente non trovato')
     return user
   },

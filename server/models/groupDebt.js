@@ -1,9 +1,9 @@
 import { Model } from 'objection'
 import User from './user.js'
 
-class Debt extends Model {
+class GroupDebt extends Model {
   static get tableName() {
-    return 'debts'
+    return 'group_debts'
   }
 
   static get relationMappings() {
@@ -12,7 +12,7 @@ class Debt extends Model {
         relation: Model.BelongsToOneRelation,
         modelClass: User,
         join: {
-          from: 'debts.payer_id',
+          from: 'group_debts.payer_id',
           to: 'users.id',
         },
       },
@@ -20,11 +20,11 @@ class Debt extends Model {
         relation: Model.BelongsToOneRelation,
         modelClass: User,
         join: {
-          from: 'debts.receiver_id',
+          from: 'group_debts.receiver_id',
           to: 'users.id',
         },
       },
     }
   }
 }
-export default Debt
+export default GroupDebt

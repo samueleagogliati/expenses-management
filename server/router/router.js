@@ -5,8 +5,9 @@ import LoginPage from '../../src/pages/LoginPage.vue'
 import SignupPage from '../../src/pages/SignupPage.vue'
 import Chart from '../../src/pages/Chart.vue'
 import SettingsPage from '../../src/pages/SettingsPage.vue'
-import Debts from '../../src/pages/Debts.vue'
 import Groups from '../../src/pages/Groups.vue'
+import ShowGroup from '../../src/pages/ShowGroup.vue'
+import { toast } from 'vue3-toastify'
 
 import { jwtDecode } from 'jwt-decode'
 
@@ -40,14 +41,14 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/debts',
-    component: Debts,
+    path: '/groups',
+    component: Groups,
     meta: { requiresAuth: true },
   },
   {
-    path: '/groups',
-    component: Groups,
-    meta: { requiresAuth: false },
+    path: '/groups/:group_id',
+    component: ShowGroup,
+    meta: { requiresAuth: true },
   },
 ]
 
@@ -75,8 +76,10 @@ router.beforeEach((to, from, next) => {
     if (isTokenValid) {
       next()
     } else {
-      alert('Effettuare il login!')
-      next('/login')
+      toast.error('Effettuare il login!')
+      setTimeout(() => {
+        next('/login')
+      }, 3000)
     }
   } else {
     next()

@@ -1,32 +1,50 @@
 <template>
   <main class="container mb-5">
-    <div class="row container mb-2 d-flex align-items-end">
-      <div class="col-md-3">
-        <div class="form-group">
-          <label for="startDate">Da</label>
-          <input
-            type="date"
-            class="form-control"
-            id="startDate"
-            v-model="filters.startDate"
-          />
+    <div class="text-center mb-4">
+      <button
+        class="btn btn-outline-secondary me-2"
+        @click="showFilters = !showFilters"
+      >
+        <i
+          class="fa-solid me-2"
+          :class="showFilters ? 'fa-eye-slash' : 'fa-eye'"
+        ></i>
+        {{ showFilters ? 'Nascondi Filtri' : 'Mostra Filtri' }}
+      </button>
+    </div>
+
+    <div class="filters-wrapper" :class="{ invisible: !showFilters }">
+      <div class="row container mb-2 d-flex align-items-end">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="startDate">Da</label>
+            <input
+              type="date"
+              class="form-control"
+              id="startDate"
+              v-model="filters.startDate"
+            />
+          </div>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="form-group">
-          <label for="endDate">A</label>
-          <input
-            type="date"
-            class="form-control"
-            id="endDate"
-            v-model="filters.endDate"
-          />
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="endDate">A</label>
+            <input
+              type="date"
+              class="form-control"
+              id="endDate"
+              v-model="filters.endDate"
+            />
+          </div>
         </div>
-      </div>
-      <div class="col-md-2">
-        <button class="btn btn-secondary ps-3 pe-3" @click="searchWithFilters">
-          Cerca
-        </button>
+        <div class="col-md-2">
+          <button
+            class="btn btn-secondary ps-3 pe-3"
+            @click="searchWithFilters"
+          >
+            Cerca
+          </button>
+        </div>
       </div>
     </div>
 
@@ -99,6 +117,7 @@ export default defineComponent({
     const lastDay = formatDateLocal(new Date(year, month + 1, 0))
 
     return {
+      showFilters: true,
       filters: {
         startDate: firstDay,
         endDate: lastDay,
@@ -193,5 +212,12 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 610px;
+}
+.filters-wrapper {
+  min-height: 95px;
+}
+.invisible {
+  visibility: hidden;
 }
 </style>

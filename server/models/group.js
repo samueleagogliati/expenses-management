@@ -1,5 +1,6 @@
 import { Model } from 'objection'
 import User from './user.js'
+import GroupDebt from './groupDebt.js'
 
 class Group extends Model {
   static get tableName() {
@@ -18,6 +19,14 @@ class Group extends Model {
             to: 'group_users.user_id',
           },
           to: 'users.id',
+        },
+      },
+      group_debts: {
+        relation: Model.HasManyRelation,
+        modelClass: GroupDebt,
+        join: {
+          from: 'groups.id',
+          to: 'group_debts.group_id',
         },
       },
     }
