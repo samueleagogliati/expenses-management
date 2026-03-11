@@ -5,107 +5,111 @@
     @success="onSuccess"
     @fail="onFail"
   >
-    <div class="d-flex justify-content-center mt-2">
-      <div class="card p-4 shadow" style="width: 60%">
-        <div class="card-body text-center">
-          <div class="d-flex justify-content-center">
-            <div style="max-width: 250px" class="w-100">
-              <input
-                type="date"
-                class="form-control"
-                id="debtDate"
-                v-model="debtDate"
-              />
-            </div>
-          </div>
-          <div class="d-flex mb-3 mt-3 w-100 gap-3">
-            <div class="flex-shrink-0" style="max-width: 120px">
-              <input
-                v-model="price"
-                autocomplete="off"
-                id="price"
-                name="price"
-                class="form-control"
-                placeholder="Prezzo"
-              />
-            </div>
-            <div class="flex-fill">
-              <input
-                v-model="description"
-                autocomplete="off"
-                id="description"
-                name="description"
-                type="text"
-                class="form-control"
-                placeholder="Descrizione"
-              />
-            </div>
-            <div class="flex-shrink-0" style="max-width: 350px">
-              <select
-                v-model="selectedCategory"
-                id="category"
-                name="category"
-                class="form-select no-outline"
-              >
-                <option
-                  v-for="category in categories"
-                  :value="category.id"
-                  :key="category.id"
-                >
-                  {{ category.description }}
-                </option>
-              </select>
-            </div>
-          </div>
+    <div class="container mt-3">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+          <div class="card p-3 p-md-4 shadow border-0 rounded-3">
+            <div class="card-body">
+              <div class="row justify-content-center mb-4">
+                <div class="col-12 col-sm-6">
+                  <input
+                    type="date"
+                    class="form-control text-center bg-light border-0"
+                    id="debtDate"
+                    v-model="debtDate"
+                  />
+                </div>
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-4 col-md-3">
+                  <input
+                    v-model="price"
+                    autocomplete="off"
+                    id="price"
+                    name="price"
+                    class="form-control"
+                    placeholder="€"
+                  />
+                </div>
+                <div class="col-8 col-md-5">
+                  <input
+                    v-model="description"
+                    autocomplete="off"
+                    id="description"
+                    name="description"
+                    type="text"
+                    class="form-control"
+                    placeholder="Descrizione"
+                  />
+                </div>
+                <div class="col-12 col-md-4">
+                  <select
+                    v-model="selectedCategory"
+                    id="category"
+                    name="category"
+                    class="form-select no-outline"
+                  >
+                    <option
+                      v-for="category in categories"
+                      :value="category.id"
+                      :key="category.id"
+                    >
+                      {{ category.description }}
+                    </option>
+                  </select>
+                </div>
+              </div>
 
-          <div class="mt-4">
-            <label for="payerId" class="form-label">Chi ha pagato</label>
-            <select
-              v-model="payerId"
-              id="payerId"
-              class="form-select"
-              style="max-width: 250px; margin: 0 auto"
-            >
-              <option
-                v-for="user in groupUsers"
-                :key="user.id"
-                :value="user.id"
-              >
-                {{ user.firstname }}
-              </option>
-            </select>
-          </div>
-          <div class="mt-2">
-            <label for="splitType" class="form-label">Dividi spesa</label>
-            <select
-              v-model="splitType"
-              id="splitType"
-              class="form-select"
-              style="max-width: 250px; margin: 0 auto"
-            >
-              <option value="equal">Equamente</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div v-if="splitType === 'custom'" class="mt-4 text-start">
-            <div
-              v-for="user in groupUsers"
-              :key="user.id"
-              class="input-group mb-2"
-            >
-              <span class="input-group-text">{{ user.firstname }}</span>
-              <input
-                class="form-control"
-                v-model.number="customSplits[user.id]"
-              />
+              <div class="row g-3 mt-2">
+                <div class="col-12 col-sm-6">
+                  <label for="payerId" class="form-label">Chi ha pagato</label>
+                  <select v-model="payerId" id="payerId" class="form-select">
+                    <option
+                      v-for="user in groupUsers"
+                      :key="user.id"
+                      :value="user.id"
+                    >
+                      {{ user.firstname }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label for="splitType" class="form-label">Dividi spesa</label>
+                  <select
+                    v-model="splitType"
+                    id="splitType"
+                    class="form-select"
+                  >
+                    <option value="equal">Equamente</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+              </div>
+
+              <div v-if="splitType === 'custom'" class="mt-4">
+                <div
+                  v-for="user in groupUsers"
+                  :key="user.id"
+                  class="input-group mb-2"
+                >
+                  <span class="input-group-text">{{ user.firstname }}</span>
+                  <input
+                    class="form-control"
+                    v-model.number="customSplits[user.id]"
+                  />
+                </div>
+              </div>
+
+              <div class="text-center mt-4">
+                <button
+                  class="btn btn-dark w-100 w-sm-auto px-5 py-2 text-uppercase rounded-pill fw-bold shadow-sm"
+                  type="submit"
+                >
+                  Salva
+                </button>
+              </div>
             </div>
           </div>
-          <button
-            class="text-center btn btn-dark mt-3 px-4 py-2 text-uppercase"
-            type="submit"
-          >
-            Salva
-          </button>
         </div>
       </div>
     </div>
@@ -220,3 +224,11 @@ watch([price, splitType], () => {
   }
 })
 </script>
+
+<style scoped>
+@media (min-width: 576px) {
+  .w-sm-auto {
+    width: auto !important;
+  }
+}
+</style>
