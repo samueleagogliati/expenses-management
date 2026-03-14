@@ -14,8 +14,8 @@
     </div>
 
     <div class="filters-wrapper" :class="{ invisible: !showFilters }">
-      <div class="row container mb-2 d-flex align-items-end">
-        <div class="col-md-3">
+      <div class="row mb-2 d-flex align-items-end justify-content-center">
+        <div class="col-12 col-md-3 mb-3">
           <div class="form-group">
             <label for="startDate">Da</label>
             <input
@@ -26,7 +26,7 @@
             />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-md-3 mb-3">
           <div class="form-group">
             <label for="endDate">A</label>
             <input
@@ -37,9 +37,9 @@
             />
           </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-12 col-md-2">
           <button
-            class="btn btn-secondary ps-3 pe-3"
+            class="btn btn-secondary ps-3 pe-3 w-100"
             @click="searchWithFilters"
           >
             Cerca
@@ -49,8 +49,8 @@
     </div>
 
     <div id="container-chart">
-      <div class="row w-100 mt-1">
-        <div class="col d-flex justify-content-start">
+      <div class="row w-100 mt-1 align-items-center">
+        <div class="col-12 col-lg-5 mb-5 mb-lg-0">
           <table
             v-if="data && data.length > 0"
             class="table table-bordered table-hover"
@@ -74,14 +74,12 @@
           </table>
         </div>
 
-        <div class="col">
+        <div class="col-12 col-lg-7">
           <apexchart
             v-if="loading"
             type="pie"
             :options="chartOptions"
             :series="series"
-            width="600"
-            height="600"
           ></apexchart>
         </div>
       </div>
@@ -129,7 +127,7 @@ export default defineComponent({
       series: [],
       chartOptions: {
         chart: {
-          width: 50,
+          width: '100%',
           type: 'pie',
         },
         labels: [],
@@ -145,12 +143,14 @@ export default defineComponent({
         ],
         responsive: [
           {
-            breakpoint: 480,
+            breakpoint: 768,
             options: {
               chart: {
-                width: 50,
+                width: '100%',
               },
-              legend: {},
+              legend: {
+                position: 'bottom',
+              },
             },
           },
         ],
@@ -210,12 +210,10 @@ export default defineComponent({
 <style lang="scss">
 #container-chart {
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 610px;
 }
 .filters-wrapper {
-  min-height: 95px;
+  transition: visibility 0.1s linear;
 }
 .invisible {
   visibility: hidden;
