@@ -1,5 +1,7 @@
 <template>
-  <ButtonNote />
+  <div class="notes-button-container">
+    <ButtonNote />
+  </div>
   <Modal
     modal-id="notesModal"
     title="Note"
@@ -148,5 +150,10 @@ body {
     outline: none;
     box-shadow: none;
   }
+}
+
+.notes-button-container {
+  position: relative;
+  z-index: 1040;
 }
 </style>

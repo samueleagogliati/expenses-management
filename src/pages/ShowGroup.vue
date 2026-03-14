@@ -1,31 +1,35 @@
 <template>
-  <Notes :user="user" />
-  <h1 class="text-center mt-2">{{ group?.name?.toUpperCase() }}</h1>
-  <GroupDebtsForm @debt-saved="loadGroup" />
+  <div class="container-fluid px-md-4 py-3">
+    <Notes :user="user" />
+    <h1 class="text-center mt-2 h3 text-break">
+      {{ group?.name?.toUpperCase() }}
+    </h1>
+    <GroupDebtsForm @debt-saved="loadGroup" />
 
-  <DebtsSummary
-    v-if="group"
-    :summary="group.debt_summary"
-    :total="group.debt_total"
-  />
-  <div class="text-center my-4" v-if="groupDebts.length">
-    <button
-      class="btn btn-outline-dark"
-      @click="showDebtsTable = !showDebtsTable"
-    >
-      <i
-        class="fa-solid me-2"
-        :class="showDebtsTable ? 'fa-eye-slash' : 'fa-eye'"
-      ></i>
-      {{ showDebtsTable ? 'Nascondi Dettaglio' : 'Mostra Dettaglio' }}
-    </button>
+    <DebtsSummary
+      v-if="group"
+      :summary="group.debt_summary"
+      :total="group.debt_total"
+    />
+    <div class="text-center my-4" v-if="groupDebts.length">
+      <button
+        class="btn btn-outline-dark w-100 w-sm-auto"
+        @click="showDebtsTable = !showDebtsTable"
+      >
+        <i
+          class="fa-solid me-2"
+          :class="showDebtsTable ? 'fa-eye-slash' : 'fa-eye'"
+        ></i>
+        {{ showDebtsTable ? 'Nascondi Dettaglio' : 'Mostra Dettaglio' }}
+      </button>
+    </div>
+    <DebtsTable
+      v-if="showDebtsTable && groupDebts.length"
+      :group-debts="groupDebts"
+      :group-id="groupId"
+      @refresh-debts="loadGroup"
+    ></DebtsTable>
   </div>
-  <DebtsTable
-    v-if="showDebtsTable && groupDebts.length"
-    :group-debts="groupDebts"
-    :group-id="groupId"
-    @refresh-debts="loadGroup"
-  ></DebtsTable>
 </template>
 
 <script setup>
@@ -65,5 +69,11 @@ const loadGroup = async () => {
 body {
   font-family: Arial, sans-serif;
   background-color: #f8f9fa;
+}
+
+@media (min-width: 576px) {
+  .w-sm-auto {
+    width: auto !important;
+  }
 }
 </style>
