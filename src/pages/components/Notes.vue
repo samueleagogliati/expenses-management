@@ -153,7 +153,7 @@ body {
 }
 
 .notes-button-container {
-  position: relative;
-  z-index: 1040;
+  /* Assicura che il bottone sia sopra gli altri elementi della pagina (es. il form) */
+  z-index: 1050;
 }
 </style>

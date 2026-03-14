@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid px-md-4 py-3">
-    <Notes :user="user" />
-    <h1 class="text-center mt-2 h3 text-break">
+    <div class="position-absolute top-0 start-0 p-3">
+      <Notes :user="user" />
+    </div>
+    <h1 class="text-center mt-5 h3 text-break">
       {{ group?.name?.toUpperCase() }}
     </h1>
     <GroupDebtsForm @debt-saved="loadGroup" />
