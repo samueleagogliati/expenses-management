@@ -71,7 +71,53 @@ export default {
       default: null,
     },
   },
+  data() {
+    return {
+      bsCollapse: null,
+    }
+  },
+  mounted() {
+    const collapseElement = this.$el.querySelector('#navbarNav')
+    if (collapseElement) {
+      // Inizializza l'istanza di Collapse di Bootstrap per poterla controllare via JS
+      this.bsCollapse = new window.bootstrap.Collapse(collapseElement, {
+        toggle: false,
+      })
+      // Aggiunge un listener al menu per chiuderlo quando si clicca un link o un pulsante
+      collapseElement.addEventListener('click', this.handleMenuClick)
+    }
+    // Aggiunge un listener al documento per chiudere il menu se si clicca fuori dalla navbar
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+  beforeUnmount() {
+    // Rimuove i listener quando il componente viene distrutto per evitare memory leak
+    const collapseElement = this.$el.querySelector('#navbarNav')
+    if (collapseElement) {
+      collapseElement.removeEventListener('click', this.handleMenuClick)
+    }
+    document.removeEventListener('click', this.handleOutsideClick)
+    if (this.bsCollapse) {
+      this.bsCollapse.dispose()
+    }
+  },
   methods: {
+    isMenuOpen() {
+      const collapseElement = this.$el.querySelector('#navbarNav')
+      return collapseElement && collapseElement.classList.contains('show')
+    },
+    handleMenuClick(event) {
+      if (event.target.matches('.nav-link, .btn')) {
+        if (this.isMenuOpen()) {
+          this.bsCollapse.hide()
+        }
+      }
+    },
+    handleOutsideClick(event) {
+      const isClickInsideNavbar = this.$el.contains(event.target)
+      if (!isClickInsideNavbar && this.isMenuOpen()) {
+        this.bsCollapse.hide()
+      }
+    },
     logout() {
       localStorage.removeItem('token')
       alert(' effettuato')
