@@ -8,7 +8,7 @@ const callService = async (serviceAction, params) => {
       headers.Authorization = `Bearer ${token}`
     }
     const response = await axios.post(
-      `http://localhost:5001/service/${serviceAction}`,
+      `http://192.168.1.16:5001/service/${serviceAction}`,
       params,
       { headers },
     )

@@ -1,0 +1,5 @@
+{
+  "appId": "com.expensens.management",
+  "appName": "expenses-management",
+  "webDir": "dist"
+}
