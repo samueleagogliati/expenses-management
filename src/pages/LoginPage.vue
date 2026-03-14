@@ -22,13 +22,23 @@
         <div class="form-group control-wrapper">
           <label class="input-label" for="password">Password</label>
           <div class="input-wrapper">
-            <input
-              type="password"
-              id="password"
-              v-model="password"
-              autocomplete="off"
-              class="form-control"
-            />
+            <div class="position-relative">
+              <input
+                :type="passwordFieldType"
+                id="password"
+                v-model="password"
+                autocomplete="off"
+                class="form-control"
+              />
+              <i
+                class="bi position-absolute top-50 translate-middle-y"
+                :class="
+                  passwordFieldType === 'password' ? 'bi-eye-slash' : 'bi-eye'
+                "
+                @click="togglePasswordVisibility"
+                style="right: 10px; cursor: pointer; z-index: 100"
+              ></i>
+            </div>
           </div>
         </div>
 
@@ -64,6 +74,7 @@ export default {
       password: null,
       username: null,
       errorMessage: null,
+      passwordFieldType: 'password',
     }
   },
   props: {
@@ -100,6 +111,10 @@ export default {
     },
     resetErrorMessage() {
       this.errorMessage = null
+    },
+    togglePasswordVisibility() {
+      this.passwordFieldType =
+        this.passwordFieldType === 'password' ? 'text' : 'password'
     },
   },
   computed: {
