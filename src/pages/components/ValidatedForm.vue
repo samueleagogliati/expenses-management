@@ -32,7 +32,10 @@ export default {
 
     this.validator
       .onFail((fields) => this.$emit('fail', fields))
-      .onSuccess((fields) => this.$emit('success', fields))
+      .onSuccess((fields) => {
+        this.$emit('success', fields)
+        this.validator.destroy()
+      })
   },
   beforeUnmount() {
     if (this.validator) {

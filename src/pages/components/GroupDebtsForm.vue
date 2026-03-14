@@ -202,6 +202,11 @@ const saveDebts = async () => {
   if (resp.success) {
     toast.success('Debito salvato')
     emit('debt-saved')
+    price.value = null
+    description.value = ''
+    splitType.value = 'equal'
+
+    debtDate.value = new Date().toISOString().split('T')[0]
   } else {
     toast.error('Errore')
   }

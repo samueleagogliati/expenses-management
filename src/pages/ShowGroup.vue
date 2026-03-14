@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid px-md-4 py-3">
+  <div class="container-fluid px-md-4 py-3 mb-5">
     <div class="position-absolute top-0 start-0 p-3">
       <Notes :user="user" />
     </div>
@@ -55,7 +55,7 @@ const groupId = route.params.group_id
 
 const group = ref(null)
 const groupDebts = ref([])
-const showDebtsTable = ref(false)
+const showDebtsTable = ref(true)
 
 onMounted(async () => {
   await loadGroup()
