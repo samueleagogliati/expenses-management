@@ -59,6 +59,8 @@
 </template>
 
 <script>
+import { Collapse } from 'bootstrap'
+
 export default {
   name: 'Navbar',
   props: {
@@ -80,7 +82,7 @@ export default {
     const collapseElement = this.$el.querySelector('#navbarNav')
     if (collapseElement) {
       // Inizializza l'istanza di Collapse di Bootstrap per poterla controllare via JS
-      this.bsCollapse = new window.bootstrap.Collapse(collapseElement, {
+      this.bsCollapse = new Collapse(collapseElement, {
         toggle: false,
       })
       // Aggiunge un listener al menu per chiuderlo quando si clicca un link o un pulsante
