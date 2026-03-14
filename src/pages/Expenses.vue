@@ -19,16 +19,16 @@
       </div>
     </div>
 
-    <div class="row mb-2 d-flex align-items-end" v-if="showFilters">
-      <div class="col-md-3">
+    <div class="row mb-2 align-items-md-end" v-if="showFilters">
+      <div class="col-12 col-md-3">
         <label>Dal</label>
         <input type="date" class="form-control" v-model="filters.startDate" />
       </div>
-      <div class="col-md-3 mt-1">
+      <div class="col-12 col-md-3 mt-3 mt-md-0">
         <label>Al</label>
         <input type="date" class="form-control" v-model="filters.endDate" />
       </div>
-      <div class="col-md-2 mt-1">
+      <div class="col-12 col-md-2 mt-3 text-center text-md-start">
         <button class="btn btn-secondary ps-3 pe-3" @click="searchWithFilters">
           Cerca
         </button>
