@@ -24,11 +24,11 @@
         <label>Dal</label>
         <input type="date" class="form-control" v-model="filters.startDate" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 mt-1">
         <label>Al</label>
         <input type="date" class="form-control" v-model="filters.endDate" />
       </div>
-      <div class="col-md-2">
+      <div class="col-md-2 mt-1">
         <button class="btn btn-secondary ps-3 pe-3" @click="searchWithFilters">
           Cerca
         </button>
