@@ -11,6 +11,7 @@
 <script>
 import { jwtDecode } from 'jwt-decode'
 import Navbar from './pages/components/Navbar.vue'
+import 'bootstrap'
 import axios from 'axios'
 import callService from './services/api'
 import 'bootstrap-icons/font/bootstrap-icons.css'
