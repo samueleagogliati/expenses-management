@@ -1,5 +1,6 @@
 <template>
   <ValidatedForm
+    ref="debtFormValidator"
     form-id="debtForm"
     :fields="fields"
     @success="onSuccess"
@@ -96,6 +97,7 @@
                   <input
                     class="form-control"
                     v-model.number="customSplits[user.id]"
+                    @input="adjustCustomSplits(user.id)"
                   />
                 </div>
               </div>
@@ -137,6 +139,7 @@ const group = ref(null)
 const route = useRoute()
 const groupId = route.params.group_id
 const debtDate = ref(new Date().toISOString().split('T')[0])
+const debtFormValidator = ref(null)
 
 const fields = [
   {
@@ -187,6 +190,30 @@ const initGroupData = () => {
   )
 }
 
+const adjustCustomSplits = (changedUserId) => {
+  if (!price.value) return
+  const total = parseFloat(price.value)
+  let val = parseFloat(customSplits.value[changedUserId])
+  if (isNaN(val)) val = 0
+
+  const otherUsers = groupUsers.value.filter((u) => u.id !== changedUserId)
+  if (otherUsers.length === 0) return
+
+  const remainder = total - val
+  let distributed = 0
+  otherUsers.forEach((u, index) => {
+    if (index === otherUsers.length - 1) {
+      customSplits.value[u.id] = parseFloat(
+        (remainder - distributed).toFixed(2),
+      )
+    } else {
+      const share = parseFloat((remainder / otherUsers.length).toFixed(2))
+      customSplits.value[u.id] = share
+      distributed += share
+    }
+  })
+}
+
 const saveDebts = async () => {
   const params = {
     price: price.value,
@@ -207,6 +234,10 @@ const saveDebts = async () => {
     splitType.value = 'equal'
 
     debtDate.value = new Date().toISOString().split('T')[0]
+
+    if (debtFormValidator.value) {
+      debtFormValidator.value.init()
+    }
   } else {
     toast.error('Errore')
   }

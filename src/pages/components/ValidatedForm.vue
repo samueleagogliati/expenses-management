@@ -19,28 +19,38 @@ export default {
     },
   },
   emits: ['success', 'fail'],
-  mounted() {
-    this.validator = new JustValidate(`#${this.formId}`, {
-      errorFieldCssClass: 'is-invalid',
-      successFieldCssClass: 'is-valid',
-      validateBeforeSubmitting: true,
-    })
-
-    this.fields.forEach(({ selector, rules }) => {
-      this.validator.addField(document.querySelector(selector), rules)
-    })
-
-    this.validator
-      .onFail((fields) => this.$emit('fail', fields))
-      .onSuccess((fields) => {
-        this.$emit('success', fields)
+  data() {
+    return {
+      validator: null,
+    }
+  },
+  methods: {
+    init() {
+      if (this.validator) {
         this.validator.destroy()
+      }
+      this.validator = new JustValidate(`#${this.formId}`, {
+        errorFieldCssClass: 'is-invalid',
+        successFieldCssClass: 'is-valid',
+        validateBeforeSubmitting: true,
       })
+
+      this.fields.forEach(({ selector, rules }) => {
+        this.validator.addField(document.querySelector(selector), rules)
+      })
+
+      this.validator
+        .onFail((fields) => this.$emit('fail', fields))
+        .onSuccess((fields) => this.$emit('success', fields))
+    },
   },
   beforeUnmount() {
     if (this.validator) {
       this.validator.destroy()
     }
+  },
+  mounted() {
+    this.init()
   },
 }
 </script>
