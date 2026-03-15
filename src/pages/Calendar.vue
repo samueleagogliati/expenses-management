@@ -11,8 +11,10 @@
     </div>
 
     <div class="w-100 d-flex justify-content-center">
-      <div class="result text-center my-3 py-2 bg-black text-white w-50 d">
-        Spese totali del mese: {{ total }} €
+      <div
+        class="result text-center my-4 py-3 text-white w-auto px-5 rounded-pill shadow-sm total-badge"
+      >
+        <span class="small opacity-75 d-block">TOTALE MESE</span> {{ total }} €
       </div>
     </div>
 
@@ -22,18 +24,22 @@
         :key="index"
         class="day text-center position-relative"
       >
-        <button
-          class="w-100 calendar-button"
-          @click="openModal(day)"
-          data-bs-toggle="modal"
-          data-bs-target="#dayModal"
-        >
-          {{ day }}
-        </button>
-        <div class="total-of-day text-center">
-          <span style="padding: 2px" v-if="totalOfDays && totalOfDays[day - 1]"
-            >{{ formatNumber(totalOfDays[day - 1]) }}
-          </span>
+        <div class="day-wrapper" :class="{ today: isToday(day) }">
+          <button
+            class="w-100 calendar-button"
+            @click="openModal(day)"
+            data-bs-toggle="modal"
+            data-bs-target="#dayModal"
+          >
+            {{ day }}
+          </button>
+          <div class="total-of-day text-center">
+            <span
+              style="padding: 2px"
+              v-if="totalOfDays && totalOfDays[day - 1]"
+              >{{ formatNumber(totalOfDays[day - 1]) }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -227,6 +233,11 @@ export default {
     },
   },
   methods: {
+    isToday(day) {
+      const today = moment()
+      const dayInCalendar = moment(this.currentDate).date(day)
+      return today.isSame(dayInCalendar, 'day')
+    },
     formatNumber(value) {
       const number = parseFloat(value.total)
       if (!number) return '-'
@@ -403,12 +414,17 @@ export default {
 </script>
 
 <style scoped>
-.result {
-  font-family: 'Courier New', Courier, monospace;
+.total-badge {
+  background: linear-gradient(135deg, #111 0%, #444 100%);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 .calendar-button {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  color: #444;
   border: none;
   background: none;
   height: 80%;
@@ -423,20 +439,46 @@ export default {
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 8px; /* Spazio tra i giorni */
+  padding: 0 10px;
   height: 62vh;
 }
 
-.day {
-  padding: 8px;
-  border: 1px solid #ccc;
-}
-.day:hover {
-  background-color: #cccccc84;
+.day-wrapper:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+  border-color: #764ba2;
 }
 
 .total-of-day {
-  font-size: 15px;
-  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #764ba2;
+  margin-top: 5px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.day {
+  padding: 4px;
+}
+
+.day-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.today {
+  background-color: #f2eefc;
+  border-color: #dcd1f0;
 }
 
 .form-select:focus {

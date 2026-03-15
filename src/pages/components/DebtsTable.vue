@@ -24,7 +24,7 @@
       </button>
     </div>
     <div
-      class="row debt-item align-items-center py-2 border-bottom"
+      class="row debt-item align-items-center py-3 px-2 border-bottom"
       v-for="debt in groupDebts"
       :key="debt.id"
     >
@@ -165,5 +165,19 @@ const deleteDisabledDebt = async () => {
 .debts-list {
   max-height: 40vh;
   overflow-y: scroll;
+}
+.debt-item {
+  transition: background-color 0.2s ease-in-out;
+  border-radius: 8px;
+}
+.debt-item:hover {
+  background-color: #f8f9fa;
+}
+.debt-item .col-auto i {
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+.debt-item:hover .col-auto i {
+  opacity: 1;
 }
 </style>

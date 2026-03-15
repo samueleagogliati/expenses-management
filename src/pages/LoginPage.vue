@@ -1,5 +1,7 @@
 <template>
-  <div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div
+    class="d-flex justify-content-center align-items-center min-vh-100 main-bg"
+  >
     <div class="login-container p-4">
       <validated-form
         form-id="login-form"
@@ -150,14 +152,21 @@ export default {
 
 <style lang="scss" scoped>
 @use 'sass:color';
+
+.main-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 .login-container {
   width: 100%;
   max-width: 400px;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 40px 30px;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
 }
 
 .form-group {
@@ -167,33 +176,42 @@ export default {
 label {
   font-size: 0.85rem;
   text-transform: uppercase;
-  color: #3b3a3a;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 5px;
+  display: block;
 }
 
 .form-control {
-  background-color: transparent;
-  border-top: 0;
-  border-right: 0;
-  border-left: 0;
-  border-radius: 0;
+  background-color: #f0f2f5;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
   &:focus {
-    border-color: #111;
+    background-color: #fff;
+    border-color: #764ba2;
     outline: none;
-    box-shadow: none;
+    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
   }
 }
 
 .btn--form {
   padding: 0.5rem 2.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: #fff;
-  background: #111;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  border: none;
   border-radius: 35px;
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+  transition: all 0.3s ease;
   &:focus,
   &:hover {
-    background: color.adjust(#111, $lightness: 13%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
   }
 }
 

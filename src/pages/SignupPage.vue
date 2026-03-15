@@ -1,6 +1,6 @@
 <template>
-  <div class="d-flex justify-content-center align-items-center">
-    <div class="signup_container p-4">
+  <div class="d-flex justify-content-center align-items-center main-bg">
+    <div class="signup_container">
       <form id="signup-form" class="w-100">
         <div class="form-group">
           <label for="firstname">Nome</label>
@@ -194,24 +194,24 @@ body {
     'Roboto',
     arial,
     sans-serif;
-  background: #e9e9e9;
+}
+
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
 }
 
 .signup_container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh; /* Centra verticalmente */
-  box-shadow: 0px 3px 7px rgb(0, 0, 0);
-  width: 50%;
-}
-
-.container_child {
   width: 100%;
-  background: #fafafa;
-  padding: 2.5rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .form-group {
@@ -221,44 +221,54 @@ body {
 label {
   font-size: 0.85rem;
   text-transform: uppercase;
-  color: #3b3a3a;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 5px;
+  display: block;
 }
 
 .form-control {
-  background-color: transparent;
-  border-top: 0;
-  border-right: 0;
-  border-left: 0;
-  border-radius: 0;
+  background-color: #f0f2f5;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
   &:focus {
-    border-color: #111;
+    background-color: #fff;
+    border-color: #764ba2;
     outline: none;
-    box-shadow: none;
+    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
   }
 }
 
 .btn--form {
   padding: 0.5rem 2.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: #fff;
-  background: #111;
-  border-radius: remy(35px);
+  background: linear-gradient(to right, #667eea, #764ba2);
+  border: none;
+  border-radius: 35px;
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+  transition: all 0.3s ease;
   &:focus,
   &:hover {
-    background: color.adjust(#111, $lightness: 13%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
   }
 }
 
 .signup_link {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  text-decoration: underline;
-  color: #999;
+  text-decoration: none;
+  color: #764ba2;
+  transition: color 0.3s;
   &:focus,
   &:hover {
-    color: color.adjust(#999, $lightness: -13%);
+    color: #667eea;
   }
 }
 </style>

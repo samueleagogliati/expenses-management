@@ -4,10 +4,15 @@
       <div class="col-12 col-md-10 col-lg-8">
         <h1 class="mb-4 text-center">I Tuoi Gruppi</h1>
 
-        <div class="row g-3 g-md-4">
-          <div class="col-12 col-sm-6" v-for="group in groups" :key="group.id">
+        <transition-group name="list" tag="div" class="row g-3 g-md-4">
+          <div
+            class="col-12 col-sm-6"
+            v-for="(group, index) in groups"
+            :key="group.id"
+            :style="{ 'transition-delay': `${index * 50}ms` }"
+          >
             <div
-              class="card h-100 shadow-sm border-0 rounded-3 group-card"
+              class="card h-100 shadow-sm border-0 rounded-4 group-card"
               @click="$router.push(`/groups/${group.id}`)"
             >
               <i
@@ -23,7 +28,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </transition-group>
 
         <div class="text-center mt-4 mt-md-5">
           <button
@@ -75,13 +80,34 @@ const deleteGroup = async (groupId) => {
 
 <style scoped>
 .group-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  cursor: pointer;
 }
 .group-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+  border-color: #764ba2;
+}
+
+.card-title {
+  font-weight: 700;
+  color: #333;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.4s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 .delete-icon {
   opacity: 0;

@@ -9,13 +9,13 @@
     <div class="container mt-3">
       <div class="row justify-content-center">
         <div class="col-12 col-md-10 col-lg-8">
-          <div class="card p-3 p-md-4 shadow border-0 rounded-3">
+          <div class="card p-3 p-md-4 shadow-custom border-0 rounded-4">
             <div class="card-body">
               <div class="row justify-content-center mb-4">
                 <div class="col-12 col-sm-6">
                   <input
                     type="date"
-                    class="form-control text-center bg-light border-0"
+                    class="form-control text-center bg-light border-0 rounded-pill"
                     id="debtDate"
                     v-model="debtDate"
                   />
@@ -29,7 +29,7 @@
                     id="price"
                     name="price"
                     class="form-control"
-                    placeholder="€"
+                    placeholder="€ 0.00"
                   />
                 </div>
                 <div class="col-8 col-md-5">
@@ -48,7 +48,7 @@
                     v-model="selectedCategory"
                     id="category"
                     name="category"
-                    class="form-select no-outline"
+                    class="form-select"
                   >
                     <option
                       v-for="category in categories"
@@ -104,7 +104,7 @@
 
               <div class="text-center mt-4">
                 <button
-                  class="btn btn-dark w-100 w-sm-auto px-5 py-2 text-uppercase rounded-pill fw-bold shadow-sm"
+                  class="btn btn-gradient w-100 w-sm-auto px-5 py-3 text-uppercase rounded-pill fw-bold shadow-sm"
                   type="submit"
                 >
                   Salva
@@ -261,10 +261,50 @@ watch([price, splitType], () => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 @media (min-width: 576px) {
   .w-sm-auto {
     width: auto !important;
+  }
+}
+
+.shadow-custom {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+.form-control,
+.form-select {
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #eee;
+  background-color: #fcfcfc;
+  transition: all 0.3s;
+
+  &:focus {
+    background-color: #fff;
+    border-color: #764ba2;
+    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+  }
+}
+
+.input-group-text {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  background-color: #f1f3f5;
+  border: 1px solid #eee;
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, #111, #333);
+  color: white;
+  border: none;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    color: white;
   }
 }
 </style>

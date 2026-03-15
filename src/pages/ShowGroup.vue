@@ -3,7 +3,7 @@
     <div class="position-absolute top-0 start-0 p-3">
       <Notes :user="user" />
     </div>
-    <h1 class="text-center mt-5 h3 text-break">
+    <h1 class="text-center mt-5 h3 text-break group-title">
       {{ group?.name?.toUpperCase() }}
     </h1>
     <GroupDebtsForm @debt-saved="loadGroup" />
@@ -15,7 +15,7 @@
     />
     <div class="text-center my-4" v-if="groupDebts.length">
       <button
-        class="btn btn-outline-dark w-100 w-sm-auto"
+        class="btn btn-outline-custom w-100 w-sm-auto rounded-pill px-4"
         @click="showDebtsTable = !showDebtsTable"
       >
         <i
@@ -70,12 +70,33 @@ const loadGroup = async () => {
 <style lang="scss" scoped>
 body {
   font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+  background-color: #fcfcfc;
 }
 
 @media (min-width: 576px) {
   .w-sm-auto {
     width: auto !important;
+  }
+}
+
+.group-title {
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #333;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.btn-outline-custom {
+  border: 2px solid #333;
+  color: #333;
+  font-weight: 600;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
 }
 </style>
