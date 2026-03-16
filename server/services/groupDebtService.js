@@ -1,5 +1,7 @@
 import GroupDebt from '../models/groupDebt.js'
 import Expense from '../models/expense.js'
+import Group from '../models/group.js'
+import moment from 'moment'
 
 export default {
   async list() {
@@ -8,32 +10,40 @@ export default {
 
   async createGroupDebt(params) {
     try {
-      const splits = Object.entries(params.splits).map(([userId, amount]) => ({
-        userId,
-        amount,
-      }))
+      const { description, categoryId, payerId, splits, groupId, date } = params
 
-      for (const split of splits) {
-        if (split.userId != params.payerId) {
-          const debtPayload = {
-            payer_id: split.userId,
-            receiver_id: params.payerId,
-            price: split.amount,
-            group_id: params.groupId,
-            disabled: false,
-            description: params.description,
-            date: params.date,
-          }
-          await GroupDebt.query().insert(debtPayload)
+      const createdExpenses = []
+      const formattedDate = new Date(date)
+
+      for (const [userId, amount] of Object.entries(splits)) {
+        if (parseFloat(amount) > 0) {
+          const expense = await Expense.query().insert({
+            price: parseFloat(amount),
+            description,
+            category_id: categoryId,
+            user_id: parseInt(userId, 10),
+            date: formattedDate,
+          })
+          createdExpenses.push(expense)
         }
+      }
 
-        await Expense.query().insert({
-          price: split.amount,
-          category_id: params.categoryId,
-          description: params.description,
-          date: params.date,
-          user_id: split.userId,
-        })
+      for (const [userId, amount] of Object.entries(splits)) {
+        if (
+          parseInt(userId, 10) !== parseInt(payerId, 10) &&
+          parseFloat(amount) > 0
+        ) {
+          const userExpense = createdExpenses.find((e) => e.user_id == userId)
+          await GroupDebt.query().insert({
+            group_id: groupId,
+            payer_id: parseInt(userId, 10),
+            receiver_id: parseInt(payerId, 10),
+            price: parseFloat(amount),
+            date: formattedDate,
+            description,
+            disabled: false,
+          })
+        }
       }
       return {
         success: true,
@@ -94,6 +104,60 @@ export default {
 
       return { success: true, message: 'Debito aggiornato', data: updatedDebt }
     } catch (error) {
+      return { success: false, message: 'Errore: ' + error.message }
+    }
+  },
+
+  async updateGroupDebt(params) {
+    try {
+      const { id, groupId } = params
+      const expenseId = id
+
+      if (!expenseId) {
+        throw new Error(
+          "ID della spesa principale mancante per l'aggiornamento.",
+        )
+      }
+
+      const originalMainExpense = await Expense.query().findById(expenseId)
+      if (!originalMainExpense) {
+        throw new Error("Spesa originale non trovata per l'aggiornamento.")
+      }
+
+      const originalDate = moment(originalMainExpense.date).format('YYYY-MM-DD')
+      const originalDescription = originalMainExpense.description
+
+      const group = await Group.query()
+        .findById(groupId)
+        .withGraphFetched('users')
+      if (!group) throw new Error('Gruppo non trovato.')
+      const userIds = group.users.map((u) => u.id)
+
+      const siblingExpenses = await Expense.query()
+        .whereIn('user_id', userIds)
+        .whereRaw('LOWER(description) = ?', [
+          originalDescription.toLowerCase().trim(),
+        ])
+        .where('date', originalDate)
+
+      const siblingExpenseIds = siblingExpenses.map((e) => e.id)
+
+      if (siblingExpenseIds.length > 0) {
+        await GroupDebt.query()
+          .where('group_id', groupId)
+          .where('date', originalDate)
+          .whereRaw('LOWER(description) = ?', [
+            originalDescription.toLowerCase().trim(),
+          ])
+          .delete()
+        await Expense.query().whereIn('id', siblingExpenseIds).delete()
+      }
+
+      await this.createGroupDebt(params)
+
+      return { success: true, message: 'Spesa aggiornata con successo' }
+    } catch (error) {
+      console.error('Errore in updateGroupDebt:', error)
       return { success: false, message: 'Errore: ' + error.message }
     }
   },

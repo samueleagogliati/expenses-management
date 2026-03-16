@@ -7,7 +7,6 @@ export function authenticateJWT(req, res, next) {
     return res.status(401).json({ message: 'Missing token' })
   }
 
-  // The header should be: 'Bearer <token>'
   const token = authHeader.split(' ')[1]
 
   if (!token) {

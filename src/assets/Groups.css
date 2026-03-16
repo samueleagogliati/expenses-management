@@ -51,7 +51,7 @@
 
 .group-card-body {
   padding: 1.5rem;
-  flex-grow: 1; /* Fa in modo che il corpo occupi lo spazio disponibile */
+  flex-grow: 1;
   color: #4a5568;
 }
 
@@ -67,7 +67,6 @@
   text-align: right;
 }
 
-/* Stile per un pulsante di "add group" */
 .add-group-card {
   display: flex;
   align-items: center;

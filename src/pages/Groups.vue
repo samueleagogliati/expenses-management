@@ -116,19 +116,16 @@ const deleteGroup = async (groupId) => {
   z-index: 10;
 }
 
-/* Desktop: mostra l'icona solo quando passi sopra col mouse */
 .group-card:hover .delete-icon {
   opacity: 1;
 }
 
-/* Mobile/Tablet: mostra sempre l'icona perché non esiste l'hover */
 @media (hover: none) {
   .delete-icon {
     opacity: 1;
   }
 }
 
-/* Utility per il bottone: larghezza automatica sopra i 576px */
 @media (min-width: 576px) {
   .w-sm-auto {
     width: auto !important;

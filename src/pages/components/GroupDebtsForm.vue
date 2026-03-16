@@ -107,7 +107,7 @@
                   class="btn btn-gradient w-100 w-sm-auto px-5 py-3 text-uppercase rounded-pill fw-bold shadow-sm"
                   type="submit"
                 >
-                  Salva
+                  {{ isEditMode ? 'Aggiorna' : 'Salva' }}
                 </button>
               </div>
             </div>
@@ -119,13 +119,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import callService from '../../services/api'
 import ValidatedForm from './ValidatedForm.vue'
 import { toast } from 'vue3-toastify'
+import dayjs from 'dayjs'
 
 const emit = defineEmits(['debt-saved'])
+const props = defineProps({
+  expenseToEdit: {
+    type: Object,
+    default: null,
+  },
+})
 
 const categories = ref([])
 const selectedCategory = ref('')
@@ -138,8 +145,10 @@ const payerId = ref('')
 const group = ref(null)
 const route = useRoute()
 const groupId = route.params.group_id
-const debtDate = ref(new Date().toISOString().split('T')[0])
+const debtDate = ref(dayjs().format('YYYY-MM-DD'))
 const debtFormValidator = ref(null)
+
+const isEditMode = computed(() => !!props.expenseToEdit)
 
 const fields = [
   {
@@ -165,6 +174,23 @@ onMounted(async () => {
   await loadCategories()
   await loadGroup()
   initGroupData()
+
+  if (isEditMode.value) {
+    const expense = props.expenseToEdit
+    price.value = expense.price
+    description.value = expense.description
+    selectedCategory.value = expense.category?.id || expense.category_id
+    payerId.value = expense.user_id
+    debtDate.value = dayjs(expense.date).format('YYYY-MM-DD')
+
+    if (expense.splits) {
+      customSplits.value = expense.splits
+      const values = Object.values(expense.splits)
+      // Controlla se tutti i valori sono (quasi) uguali
+      const allEqual = values.every((v) => Math.abs(v - values[0]) < 0.01)
+      splitType.value = allEqual && values.length > 1 ? 'equal' : 'custom'
+    }
+  }
 })
 
 const loadGroup = async () => {
@@ -215,6 +241,11 @@ const adjustCustomSplits = (changedUserId) => {
 }
 
 const saveDebts = async () => {
+  if (isEditMode.value) {
+    await updateDebt()
+    return
+  }
+
   const params = {
     price: price.value,
     description: description.value,
@@ -229,17 +260,32 @@ const saveDebts = async () => {
   if (resp.success) {
     toast.success('Debito salvato')
     emit('debt-saved')
-    price.value = null
-    description.value = ''
-    splitType.value = 'equal'
-
-    debtDate.value = new Date().toISOString().split('T')[0]
-
     if (debtFormValidator.value) {
       debtFormValidator.value.init()
     }
   } else {
     toast.error('Errore')
+  }
+}
+
+const updateDebt = async () => {
+  const params = {
+    id: props.expenseToEdit.id,
+    price: price.value,
+    description: description.value,
+    categoryId: selectedCategory.value,
+    payerId: payerId.value,
+    splitType: splitType.value,
+    splits: customSplits.value,
+    groupId: groupId,
+    date: debtDate.value,
+  }
+  let resp = await callService('groupDebts.updateGroupDebt', params)
+  if (resp.success) {
+    toast.success('Spesa aggiornata')
+    emit('debt-saved')
+  } else {
+    toast.error(resp.message || "Errore durante l'aggiornamento")
   }
 }
 

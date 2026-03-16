@@ -439,7 +439,7 @@ export default {
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px; /* Spazio tra i giorni */
+  gap: 8px;
   padding: 0 10px;
   height: 62vh;
 }

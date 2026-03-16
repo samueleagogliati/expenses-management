@@ -4,7 +4,7 @@
     style="width: 50%"
   >
     <div
-      v-for="(category, index) in categories"
+      v-for="category in categories"
       :key="category.id"
       class="category-item row align-items-center w-50 mt-2"
     >

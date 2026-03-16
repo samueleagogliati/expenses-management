@@ -41,6 +41,11 @@
       </div>
       <div class="col-auto d-flex">
         <i
+          class="fa-solid fa-pencil text-primary me-3"
+          style="cursor: pointer"
+          @click="$emit('edit-debt', debt)"
+        ></i>
+        <i
           class="fa-solid fa-eye-slash text-primary me-3"
           style="cursor: pointer"
           @click="toggleDisabled(debt)"
@@ -72,7 +77,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['refresh-debts'])
+const emit = defineEmits(['refresh-debts', 'edit-debt'])
 
 const hasCompletedDebts = computed(() => {
   return props.groupDebts.some((debt) => debt.disabled)
@@ -129,7 +134,6 @@ const toggleDisabled = async (debt) => {
     emit('refresh-debts')
   } else {
     toast.error("Errore durante l'aggiornamento")
-    // revert change on error
     debt.disabled = !debt.disabled
   }
 }
