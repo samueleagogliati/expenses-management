@@ -7,6 +7,7 @@
       :columns="columns"
       :rows="items"
       styleClass="vgt-table striped bordered condensed compact"
+      :line-numbers="summaryRowEnabled"
       :search-options="{
         enabled: false,
         trigger: 'enter',
@@ -48,6 +49,17 @@
         >
         </VueDatePicker>
       </template>
+      <template #table-actions-bottom>
+        <div v-if="summaryRowEnabled" class="vgt-table-summary">
+          <div
+            v-for="(column, i) in columns"
+            :key="i"
+            :class="`vgt-table-summary-item ${column.tdClass}`"
+          >
+            <span v-html="column.footerFn ? column.footerFn() : ''"></span>
+          </div>
+        </div>
+      </template>
     </VueGoodTable>
   </div>
 </template>
@@ -67,6 +79,10 @@ export default {
     },
     items: {
       type: Array,
+    },
+    summaryRowEnabled: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {
@@ -112,5 +128,13 @@ export default {
   td {
     padding: 0 10px;
   }
+}
+
+:deep(.vgt-table-summary) {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+}
+:deep(.vgt-table-summary .vgt-table-summary-item) {
+  padding: 0.75rem 1rem;
 }
 </style>

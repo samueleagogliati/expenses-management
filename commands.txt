@@ -7,3 +7,7 @@ npx knex --knexfile ./db/knexfile.js migrate:rollback
 npm run migrate:make -- nome_migrazione
 
 npm run migrate
+
+
+
+sudo launchctl kickstart -k system/com.expenses.server

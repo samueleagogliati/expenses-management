@@ -4,6 +4,7 @@
     :items="expenses"
     :columns="columns"
     v-if="expenses && expenses.length > 0"
+    :summaryRowEnabled="true"
   >
   </Table>
 </template>
@@ -25,13 +26,12 @@ export default {
       default: [],
     },
   },
-  data() {
-    return {
-      columns: [
+  computed: {
+    columns() {
+      return [
         {
           label: 'Categoria',
           field: 'category',
-          tdClass: 'align-middle',
           filterOptions: {
             styleClass: 'class1',
             enabled: true,
@@ -46,7 +46,9 @@ export default {
         {
           label: 'Descrizione',
           field: 'description',
-          tdClass: 'align-middle',
+          footerFn: () => {
+            return '<strong class="text-dark d-block text-end">Totale</strong>'
+          },
           filterOptions: {
             styleClass: 'class1',
             enabled: true,
@@ -58,7 +60,6 @@ export default {
         {
           label: 'Prezzo',
           field: 'price',
-          tdClass: 'align-middle',
           filterOptions: {
             styleClass: 'class1',
             enabled: true,
@@ -68,11 +69,13 @@ export default {
           },
           type: 'decimal',
           formatFn: this.formatPrice,
+          footerFn: () => {
+            return `<strong class="text-dark d-block text-end">${this.formatPrice(this.totalExpenses)}</strong>`
+          },
         },
         {
           label: 'Data',
           field: 'date',
-          tdClass: 'align-middle',
           filterOptions: {
             styleClass: 'class1',
             enabled: true,
@@ -95,12 +98,27 @@ export default {
             customFilter: false,
           },
         },
-      ],
-    }
+      ]
+    },
+    totalExpenses() {
+      if (!this.expenses || this.expenses.length === 0) {
+        return 0
+      }
+      return this.expenses.reduce(
+        (sum, expense) => sum + Number(expense.price),
+        0,
+      )
+    },
   },
   methods: {
     formatPrice: function (value) {
-      return value + ' €'
+      if (value === null || value === undefined) return ''
+      const numberValue = Number(value)
+      if (isNaN(numberValue)) return ''
+      return numberValue.toLocaleString('it-IT', {
+        style: 'currency',
+        currency: 'EUR',
+      })
     },
   },
 }
