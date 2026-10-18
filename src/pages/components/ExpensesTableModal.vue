@@ -53,13 +53,13 @@
               @click="deleteExpense(expense.id)"
               type="button"
             >
-              <i class="fa-solid fa-trash"></i>
+              <i class="bi bi-trash"></i>
             </button>
           </td>
           <td class="align-middle">
             <button class="btn" @click="editedExpense(expense)" type="button">
-              <i v-if="!expense.editMode" class="fa-solid fa-pencil"></i>
-              <i v-else class="fa-solid fa-check"></i>
+              <i v-if="!expense.editMode" class="bi bi-pencil"></i>
+              <i v-else class="bi bi-check-lg"></i>
             </button>
           </td>
         </tr>

@@ -31,10 +31,10 @@
                 @click="updateNote(note)"
                 class="btn"
               >
-                <i class="fa-solid fa-check text-dark"></i>
+                <i class="bi bi-check-lg text-dark"></i>
               </button>
               <button @click="deleteNote(note)" class="btn">
-                <i class="fa-solid fa-trash text-danger"></i>
+                <i class="bi bi-trash text-danger"></i>
               </button>
             </div>
           </div>
@@ -49,7 +49,7 @@
           placeholder="Aggiungi nota"
         />
         <button @click="addNote" class="btn py-2 btn-dark">
-          <i class="fa-solid fa-plus"></i>
+          <i class="bi bi-plus-lg"></i>
         </button>
       </div>
     </template>

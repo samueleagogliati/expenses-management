@@ -128,13 +128,21 @@ import dayjs from 'dayjs'
 
 const emit = defineEmits(['debt-saved'])
 const props = defineProps({
+  group: {
+    type: Object,
+    required: true,
+  },
+  categories: {
+    type: Array,
+    default: () => [],
+  },
   expenseToEdit: {
     type: Object,
     default: null,
   },
 })
+const categories = computed(() => props.categories)
 
-const categories = ref([])
 const selectedCategory = ref('')
 const price = ref(null)
 const description = ref('')
@@ -142,7 +150,6 @@ const splitType = ref('equal')
 const groupUsers = ref([])
 const customSplits = ref({})
 const payerId = ref('')
-const group = ref(null)
 const route = useRoute()
 const groupId = route.params.group_id
 const debtDate = ref(dayjs().format('YYYY-MM-DD'))
@@ -171,8 +178,6 @@ const fields = [
 ]
 
 onMounted(async () => {
-  await loadCategories()
-  await loadGroup()
   initGroupData()
 
   if (isEditMode.value) {
@@ -193,23 +198,13 @@ onMounted(async () => {
   }
 })
 
-const loadGroup = async () => {
-  group.value = await callService('groups.getGroup', {
-    group_id: groupId,
-  })
-}
-
-const loadCategories = async () => {
-  categories.value = await callService('categories.list', {})
-  if (categories.value.length) {
-    selectedCategory.value = categories.value[0].id
-  }
-}
-
 const initGroupData = () => {
-  groupUsers.value = group.value.users || []
+  groupUsers.value = props.group.users || []
   if (groupUsers.value.length) {
     payerId.value = groupUsers.value[0].id
+  }
+  if (props.categories.length) {
+    selectedCategory.value = props.categories[0].id
   }
   customSplits.value = Object.fromEntries(
     groupUsers.value.map((u) => [u.id, 0]),

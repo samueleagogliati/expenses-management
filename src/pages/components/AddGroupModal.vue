@@ -65,6 +65,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import Modal from 'bootstrap/js/dist/modal'
 import callService from '../../services/api'
 import ValidatedForm from './ValidatedForm.vue'
 
@@ -126,7 +127,7 @@ async function submitGroup() {
 
   selectedUser.value = ''
   groupName.value = ''
-  window.$('#addGroupModal').modal('hide')
+  Modal.getOrCreateInstance(document.getElementById('addGroupModal')).hide()
   emit('refreshUser')
 }
 </script>

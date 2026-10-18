@@ -6,6 +6,10 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    proxy: {
+      '/service': 'http://localhost:5001',
+      '/exports': 'http://localhost:5001',
+    },
   },
 })
 

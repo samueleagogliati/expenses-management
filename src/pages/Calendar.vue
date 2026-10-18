@@ -18,28 +18,33 @@
       </div>
     </div>
 
+    <div class="weekdays" aria-hidden="true">
+      <div v-for="weekday in weekdays" :key="weekday">{{ weekday }}</div>
+    </div>
+
     <div class="days mt-1">
       <div
         v-for="(day, index) in days"
-        :key="index"
+        :key="day || `empty-${index}`"
         class="day text-center position-relative"
       >
         <div class="day-wrapper" :class="{ today: isToday(day) }">
-          <button
-            class="w-100 calendar-button"
-            @click="openModal(day)"
-            data-bs-toggle="modal"
-            data-bs-target="#dayModal"
-          >
-            {{ day }}
-          </button>
-          <div class="total-of-day text-center">
-            <span
-              style="padding: 2px"
-              v-if="totalOfDays && totalOfDays[day - 1]"
-              >{{ formatNumber(totalOfDays[day - 1]) }}
-            </span>
-          </div>
+          <template v-if="day">
+            <button
+              class="w-100 calendar-button"
+              @click="openModal(day)"
+              data-bs-toggle="modal"
+              data-bs-target="#dayModal"
+              :aria-label="`Apri le spese del ${day}`"
+            >
+              {{ day }}
+            </button>
+            <div class="total-of-day text-center">
+              <span v-if="totalOfDays?.[day - 1]?.total">
+                {{ formatNumber(totalOfDays[day - 1]) }}
+              </span>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -79,24 +84,22 @@
                   :categories="categories"
                 ></ExpensesTableModal>
 
-                <a
-                  href="#category"
+                <button
                   type="button"
                   @click="toggleSelect"
                   class="btn btn-dark"
                   v-show="!showSelect"
                 >
-                  <i class="fa-solid fa-plus"></i>
-                </a>
-                <a
-                  href="#category"
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+                <button
                   type="button"
                   @click="toggleSelect"
                   class="btn btn-danger mb-2"
                   v-show="showSelect"
                 >
-                  <i class="fa-solid fa-minus"></i>
-                </a>
+                  <i class="bi bi-dash-lg"></i>
+                </button>
                 <br />
 
                 <div class="control-wrapper">
@@ -118,25 +121,32 @@
                   </select>
                 </div>
 
-                <div class="input-group mb-3 mt-3" v-if="showSelect">
-                  <span class="input-group-text" style="width: 20%"
-                    >Prezzo</span
-                  >
-                  <input
-                    autocomplete="off"
-                    id="price"
-                    type="text"
-                    class="form-control"
-                    style="width: 15%"
-                  />
-                  <input
-                    autocomplete="off"
-                    id="description"
-                    type="text"
-                    class="form-control"
-                    style="width: 65%"
-                    placeholder="Descrizione spesa"
-                  />
+                <div class="row g-2 mb-3 mt-3" v-if="showSelect">
+                  <div class="col-12 col-sm-2">
+                    <label class="form-label" for="price">Prezzo</label>
+                  </div>
+                  <div class="col-4 col-sm-3">
+                    <input
+                      autocomplete="off"
+                      id="price"
+                      type="number"
+                      inputmode="decimal"
+                      min="0"
+                      step="0.01"
+                      v-model="newExpensePrice"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="col-8 col-sm-7">
+                    <input
+                      autocomplete="off"
+                      id="description"
+                      type="text"
+                      class="form-control"
+                      v-model="newExpenseDescription"
+                      placeholder="Descrizione spesa"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -159,7 +169,7 @@
               <button
                 type="submit"
                 class="btn btn-dark"
-                v-if="!disabledSaveButton"
+                v-if="showSelect"
               >
                 Salva
               </button>
@@ -173,14 +183,24 @@
 
 <script>
 import JustValidate from 'just-validate'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  getDate,
+  getDaysInMonth,
+  isSameDay,
+  parseISO,
+  setDate,
+  startOfDay,
+  startOfMonth,
+  subMonths,
+} from 'date-fns'
 import { it } from 'date-fns/locale'
-import $ from 'jquery'
 import ExpensesTableModal from './components/ExpensesTableModal.vue'
 import AlertMessage from './components/AlertMessage.vue'
-import { jwtDecode } from 'jwt-decode'
 import callService from '../services/api'
-import moment from 'moment'
 
 export default {
   name: 'Calendar',
@@ -199,7 +219,7 @@ export default {
       items: [],
       total: 0,
       selectedDate: null,
-      currentDate: moment().startOf('day').toDate(),
+      currentDate: startOfDay(new Date()),
       selectedDay: null,
       showSelect: false,
       expenses: [],
@@ -211,8 +231,9 @@ export default {
       editedExpenses: [],
       validation: null,
       isSaving: false,
-      disabledSaveButton: true,
       selectedCategory: null,
+      newExpensePrice: '',
+      newExpenseDescription: '',
     }
   },
   computed: {
@@ -223,20 +244,27 @@ export default {
       return `${capitalizedMonthName} ${format(this.currentDate, 'yyyy', { locale: it })}`
     },
     days() {
-      const startDate = moment(this.currentDate).startOf('month').toDate()
-      const endDate = moment(this.currentDate).endOf('month').toDate()
+      const startDate = startOfMonth(this.currentDate)
+      const endDate = endOfMonth(this.currentDate)
       const allDaysOfMonth = eachDayOfInterval({
         start: startDate,
         end: endDate,
       })
-      return allDaysOfMonth.map((day) => format(day, 'd', { locale: it }))
+      const mondayFirstOffset = (startDate.getDay() + 6) % 7
+      return [
+        ...Array(mondayFirstOffset).fill(null),
+        ...allDaysOfMonth.map((day) => format(day, 'd', { locale: it })),
+      ]
+    },
+    weekdays() {
+      return ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
     },
   },
   methods: {
     isToday(day) {
-      const today = moment()
-      const dayInCalendar = moment(this.currentDate).date(day)
-      return today.isSame(dayInCalendar, 'day')
+      if (!day) return false
+      const dayInCalendar = setDate(this.currentDate, Number(day))
+      return isSameDay(new Date(), dayInCalendar)
     },
     formatNumber(value) {
       const number = parseFloat(value.total)
@@ -247,31 +275,23 @@ export default {
       if (this.validation) this.validation.destroy()
     },
     async loadDataForDays() {
-      const startDate = moment(this.currentDate)
-        .startOf('month')
-        .format('YYYY-MM-DD')
-      const endDate = moment(this.currentDate)
-        .endOf('month')
-        .format('YYYY-MM-DD')
+      const startDate = format(startOfMonth(this.currentDate), 'yyyy-MM-dd')
+      const endDate = format(endOfMonth(this.currentDate), 'yyyy-MM-dd')
       const results = await callService('expenses.getTotalOfDays', {
         userId: this.user.id,
         startDate,
         endDate,
       })
 
-      const daysInMonth = moment(this.currentDate).daysInMonth()
+      const daysInMonth = getDaysInMonth(this.currentDate)
       this.totalOfDays = Array.from({ length: daysInMonth }, (_, i) => {
-        const result = results.find((r) => moment(r.date).date() === i + 1)
+        const result = results.find((r) => getDate(parseISO(r.date)) === i + 1)
         return { day: i + 1, total: result ? result.total : 0 }
       })
     },
     async loadTotal() {
-      const startDate = moment(this.currentDate)
-        .startOf('month')
-        .format('YYYY-MM-DD')
-      const endDate = moment(this.currentDate)
-        .endOf('month')
-        .format('YYYY-MM-DD')
+      const startDate = format(startOfMonth(this.currentDate), 'yyyy-MM-dd')
+      const endDate = format(endOfMonth(this.currentDate), 'yyyy-MM-dd')
       try {
         this.total = await callService('expenses.getTotalOfPeriod', {
           userId: this.user.id,
@@ -284,10 +304,10 @@ export default {
       }
     },
     goToPreviousMonth() {
-      this.currentDate = moment(this.currentDate).subtract(1, 'month').toDate()
+      this.currentDate = subMonths(this.currentDate, 1)
     },
     goToNextMonth() {
-      this.currentDate = moment(this.currentDate).add(1, 'month').toDate()
+      this.currentDate = addMonths(this.currentDate, 1)
     },
     async editExpense(expense) {
       await callService('expenses.updateExpense', {
@@ -299,14 +319,11 @@ export default {
       await this.loadExpenses()
     },
     async openModal(day) {
-      $('#category').val('')
-      $('#description').val('')
-      $('#price').val('')
       this.showSelect = false
-      this.selectedDate = moment(this.currentDate)
-        .date(day)
-        .startOf('day')
-        .toDate()
+      this.selectedCategory = ''
+      this.newExpenseDescription = ''
+      this.newExpensePrice = ''
+      this.selectedDate = setDate(this.currentDate, Number(day))
       this.selectedDay = 'Dettaglio ' + format(this.selectedDate, 'dd/MM/yyyy')
       await this.loadExpenses()
     },
@@ -319,8 +336,8 @@ export default {
     async loadExpenses() {
       const resp = await callService('expenses.getListWithCategories', {
         userId: this.user.id,
-        startDate: moment(this.selectedDate).format('YYYY-MM-DD'),
-        endDate: moment(this.selectedDate).format('YYYY-MM-DD'),
+        startDate: format(this.selectedDate, 'yyyy-MM-dd'),
+        endDate: format(this.selectedDate, 'yyyy-MM-dd'),
       })
 
       this.expenses = resp.map((item) => ({
@@ -336,14 +353,16 @@ export default {
     async saveExpense() {
       const response = await callService('expenses.createExpense', {
         category_id: this.selectedCategory,
-        description: $('#description').val(),
-        price: $('#price').val(),
-        date: moment(this.selectedDate).format('YYYY-MM-DD'),
+        description: this.newExpenseDescription,
+        price: this.newExpensePrice,
+        date: format(this.selectedDate, 'yyyy-MM-dd'),
         user_id: this.user.id,
       })
 
       if (response.status === 200) {
         this.showSelect = false
+        this.newExpenseDescription = ''
+        this.newExpensePrice = ''
         await this.loadExpenses()
         setTimeout(() => (this.showAlertMessage = false), 2000)
       }
@@ -399,9 +418,6 @@ export default {
         await this.loadTotal()
       }
     },
-    showSelect(oldValue, newValue) {
-      this.disabledSaveButton = !this.disabledSaveButton
-    },
   },
   async mounted() {
     if (this.user) {
@@ -415,52 +431,75 @@ export default {
 
 <style scoped>
 .total-badge {
-  background: linear-gradient(135deg, #111 0%, #444 100%);
+  background: linear-gradient(135deg, #5146e5 0%, #7770f2 100%);
   font-family: 'Open Sans', sans-serif;
   font-weight: bold;
   font-size: 1.2rem;
+  box-shadow: 0 10px 24px rgba(81, 70, 229, 0.18) !important;
 }
 
 .calendar-button {
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  color: #444;
+  color: #354159;
   border: none;
   background: none;
-  height: 80%;
+  min-height: 2.5rem;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
+.month {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
+}
+
+.weekdays,
 .days {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  padding: 0 10px;
-  height: 62vh;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(0.2rem, 1vw, 0.55rem);
+  width: min(100%, 1040px);
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0 clamp(0.15rem, 1vw, 0.65rem);
+}
+
+.weekdays {
+  margin-top: 1rem;
+  color: var(--app-muted);
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .day-wrapper:hover {
-  background-color: #f8f9fa;
+  background-color: #f2f1ff;
   transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
-  border-color: #764ba2;
+  box-shadow: 0 5px 10px rgba(35, 37, 65, 0.06);
+  border-color: #c9c5ff;
 }
 
 .total-of-day {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #764ba2;
-  margin-top: 5px;
+  color: #5146e5;
+  margin-top: 0.2rem;
   font-family: 'Open Sans', sans-serif;
+  font-size: clamp(0.62rem, 1.6vw, 0.85rem);
 }
 
 .day {
-  padding: 4px;
+  min-width: 0;
+  padding: 0;
 }
 
 .day-wrapper {
@@ -469,25 +508,58 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: clamp(3.65rem, 9vw, 6.5rem);
   height: 100%;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: #fff;
-  transition: all 0.2s ease;
+  border: 1px solid var(--app-border);
+  border-radius: clamp(0.55rem, 1vw, 0.85rem);
+  background: var(--app-surface);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
 .today {
-  background-color: #f2eefc;
-  border-color: #dcd1f0;
+  background-color: #f0efff;
+  border-color: #aaa4ff;
 }
 
-.form-select:focus {
-  outline: none;
-  box-shadow: none;
+.day-wrapper.today .calendar-button {
+  color: #5146e5;
 }
 
-.form-control:focus {
-  outline: none;
-  box-shadow: none;
+@media (max-width: 575.98px) {
+  .calendar {
+    padding-right: 0.7rem;
+    padding-left: 0.7rem;
+  }
+
+  .days,
+  .weekdays {
+    gap: 0.18rem;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .weekdays {
+    margin-top: 0.5rem;
+    font-size: 0.63rem;
+  }
+
+  .day-wrapper {
+    min-height: 3.7rem;
+    border-radius: 0.55rem;
+  }
+
+  .calendar-button {
+    font-size: 0.9rem;
+  }
+
+  .total-badge {
+    padding-right: 1.25rem !important;
+    padding-left: 1.25rem !important;
+    font-size: 1rem;
+  }
 }
 </style>

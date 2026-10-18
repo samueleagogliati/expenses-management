@@ -16,7 +16,7 @@
               type="text"
               id="username"
               v-model="username"
-              autocomplete="off"
+              autocomplete="username"
               class="form-control"
             />
           </div>
@@ -29,7 +29,7 @@
                 :type="passwordFieldType"
                 id="password"
                 v-model="password"
-                autocomplete="off"
+                autocomplete="current-password"
                 class="form-control"
               />
               <i
@@ -65,7 +65,6 @@
 import ErrorMessage from './components/ErrorMessage.vue'
 import ValidatedForm from './components/ValidatedForm.vue'
 import callService from '../services/api'
-import { toast } from 'vue3-toastify'
 export default {
   components: {
     ErrorMessage,
@@ -94,16 +93,16 @@ export default {
           password: this.password,
         }
         let resp = await callService('users.login', params)
-        let token = resp?.token
-        localStorage.setItem('token', 'Bearer' + token)
         if (resp.success) {
+          localStorage.setItem('token', resp.token)
           this.$emit('login')
           this.$router.push('/')
         } else {
+          localStorage.removeItem('token')
           this.errorMessage = 'Credenziali non valide, riprova!'
         }
       } catch (error) {
-        if (error) {
+        if (error.response?.status === 401) {
           this.errorMessage = 'Credenziali non valide, riprova!'
         } else {
           this.errorMessage =
@@ -113,6 +112,9 @@ export default {
     },
     resetErrorMessage() {
       this.errorMessage = null
+    },
+    showValidationError() {
+      this.errorMessage = 'Controllare i campi inseriti.'
     },
     togglePasswordVisibility() {
       this.passwordFieldType =
@@ -154,16 +156,20 @@ export default {
 @use 'sass:color';
 
 .main-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: calc(100svh - 72px) !important;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(81, 70, 229, 0.12), transparent 35rem),
+    transparent;
 }
 
 .login-container {
   width: 100%;
   max-width: 400px;
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: #fff;
   padding: 40px 30px;
   border: none;
-  border-radius: 20px;
+  border: 1px solid var(--app-border);
+  border-radius: 22px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   transition: transform 0.3s ease;
@@ -203,7 +209,7 @@ label {
   font-weight: 700;
   text-transform: uppercase;
   color: #fff;
-  background: linear-gradient(to right, #667eea, #764ba2);
+  background: linear-gradient(110deg, #5146e5, #7770f2);
   border: none;
   border-radius: 35px;
   box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
@@ -224,6 +230,10 @@ input {
 }
 
 @media (max-width: 768px) {
+  .main-bg {
+    min-height: calc(100svh - 64px) !important;
+  }
+
   .login-container {
     width: 80%;
     padding: 15px;

@@ -12,7 +12,7 @@
             class="list-group-item d-flex justify-content-between align-items-center"
           >
             <span>
-              <i class="fa-solid fa-user-group me-2 text-secondary"></i>
+              <i class="bi bi-people-fill me-2 text-secondary"></i>
               {{ debt.payer.firstname }} deve a {{ debt.receiver.firstname }}
             </span>
             <span

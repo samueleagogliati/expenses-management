@@ -1,5 +1,14 @@
 <template>
-  <div class="container-fluid px-md-4 py-3 mb-5">
+  <div
+    v-if="isLoading"
+    class="group-loading d-flex align-items-center justify-content-center"
+    role="status"
+  >
+    <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+    <span class="ms-2">Caricamento gruppo…</span>
+  </div>
+
+  <div v-else-if="group" class="container-fluid px-md-4 py-3 mb-5">
     <div class="position-absolute top-0 start-0 p-3">
       <Notes :user="user" />
     </div>
@@ -8,6 +17,8 @@
     </h1>
     <GroupDebtsForm
       :key="formKey"
+      :group="group"
+      :categories="categories"
       :expense-to-edit="expenseToEdit"
       @debt-saved="onDebtSaved"
       ref="debtForm"
@@ -24,8 +35,8 @@
         @click="showDebtsTable = !showDebtsTable"
       >
         <i
-          class="fa-solid me-2"
-          :class="showDebtsTable ? 'fa-eye-slash' : 'fa-eye'"
+          class="bi me-2"
+          :class="showDebtsTable ? 'bi-eye-slash' : 'bi-eye'"
         ></i>
         {{ showDebtsTable ? 'Nascondi Dettaglio' : 'Mostra Dettaglio' }}
       </button>
@@ -38,10 +49,15 @@
       @edit-debt="handleEditDebt"
     ></DebtsTable>
   </div>
+
+  <div v-else class="container py-5 text-center" role="alert">
+    <p class="text-muted mb-3">Non è stato possibile caricare il gruppo.</p>
+    <button class="btn btn-outline-primary" @click="loadGroup">Riprova</button>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import callService from '../services/api'
 import { toast } from 'vue3-toastify'
@@ -59,10 +75,12 @@ const props = defineProps({
 })
 
 const route = useRoute()
-const groupId = route.params.group_id
+const groupId = computed(() => route.params.group_id)
 
 const group = ref(null)
+const categories = ref([])
 const groupDebts = ref([])
+const isLoading = ref(true)
 const showDebtsTable = ref(true)
 const expenseToEdit = ref(null)
 const formKey = ref(0)
@@ -73,9 +91,38 @@ onMounted(async () => {
 })
 
 const loadGroup = async () => {
-  group.value = await callService('groups.getGroup', { group_id: groupId })
-  groupDebts.value = group.value.group_debts || []
+  const isInitialLoad = !group.value
+  if (isInitialLoad) isLoading.value = true
+
+  try {
+    const [loadedGroup, loadedCategories] = await Promise.all([
+      callService('groups.getGroup', { group_id: groupId.value }),
+      categories.value.length
+        ? Promise.resolve(categories.value)
+        : callService('categories.list', {}),
+    ])
+
+    group.value = loadedGroup
+    categories.value = loadedCategories
+    groupDebts.value = loadedGroup.group_debts || []
+  } catch (error) {
+    console.error('Errore durante il caricamento del gruppo:', error)
+    toast.error('Errore durante il caricamento del gruppo.')
+  } finally {
+    isLoading.value = false
+  }
 }
+
+watch(
+  () => route.params.group_id,
+  async () => {
+    group.value = null
+    categories.value = []
+    groupDebts.value = []
+    await loadGroup()
+    formKey.value++
+  },
+)
 
 const handleEditDebt = async (debt) => {
   let expenseForForm = {}
@@ -171,6 +218,11 @@ body {
   color: #333;
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+}
+
+.group-loading {
+  min-height: 16rem;
+  color: #738096;
 }
 
 .btn-outline-custom {

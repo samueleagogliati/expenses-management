@@ -2,13 +2,13 @@ import axios from 'axios'
 
 const callService = async (serviceAction, params) => {
   try {
-    const token = localStorage.getItem('jwt_token')
+    const token = localStorage.getItem('token')?.replace(/^Bearer\s*/i, '')
     const headers = {}
     if (token) {
       headers.Authorization = `Bearer ${token}`
     }
     const response = await axios.post(
-      `http://192.168.1.180:5001/service/${serviceAction}`,
+      `${import.meta.env.VITE_API_BASE_URL || '/service'}/${serviceAction}`,
       params,
       { headers },
     )

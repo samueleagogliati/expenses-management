@@ -19,7 +19,7 @@
         :class="{ invisible: !hasCompletedDebts }"
         @click="deleteDisabledDebt"
       >
-        <i class="fa-solid fa-eraser me-1"></i>
+        <i class="bi bi-eraser me-1"></i>
         Pulisci completati
       </button>
     </div>
@@ -41,17 +41,17 @@
       </div>
       <div class="col-auto d-flex">
         <i
-          class="fa-solid fa-pencil text-primary me-3"
+          class="bi bi-pencil text-primary me-3"
           style="cursor: pointer"
           @click="$emit('edit-debt', debt)"
         ></i>
         <i
-          class="fa-solid fa-eye-slash text-primary me-3"
+          class="bi bi-eye-slash text-primary me-3"
           style="cursor: pointer"
           @click="toggleDisabled(debt)"
         ></i>
         <i
-          class="fa-solid fa-trash text-danger"
+          class="bi bi-trash text-danger"
           style="cursor: pointer"
           @click="deleteDebt(debt)"
         ></i>

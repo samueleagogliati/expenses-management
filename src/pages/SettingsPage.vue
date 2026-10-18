@@ -1,22 +1,19 @@
 <template>
-  <div
-    class="container-fluid d-flex flex-column align-items-center justify-content-center bg-light p-4"
-    style="width: 50%"
-  >
+  <div class="container settings-page py-4">
     <div
       v-for="category in categories"
       :key="category.id"
-      class="category-item row align-items-center w-50 mt-2"
+      class="category-item row align-items-center mt-2"
     >
-      <div class="col-6 text-start">
+      <div class="col-8 col-sm-6 text-start">
         <span>{{ category.description }}</span>
       </div>
 
-      <div class="col-3 text-center">
+      <div class="col-4 col-sm-3 text-center">
         <input type="color" v-model="category.color" />
       </div>
     </div>
-    <button @click="saveColors" class="btn btn-primary mt-4">
+    <button @click="saveColors" class="btn btn-primary mt-4 w-100 w-sm-auto">
       Salva Colori
     </button>
   </div>
@@ -24,6 +21,7 @@
 
 <script>
 import callService from '../services/api'
+import { toast } from 'vue3-toastify'
 
 export default {
   data() {
@@ -39,14 +37,17 @@ export default {
           color: category.color,
         }))
 
-        for (let i = 0; i < updatedCategories.length; i++) {
-          await callService('categories.updateCategory', updatedCategories[i])
-        }
+        await Promise.all(
+          updatedCategories.map((category) =>
+            callService('categories.updateCategory', category),
+          ),
+        )
       } catch (error) {
         console.error('Errore nel salvataggio dei colori:', error)
+        toast.error('Errore durante il salvataggio dei colori.')
         return
       }
-      alert('Colori Aggiornati')
+      toast.success('Colori aggiornati.')
     },
 
     async loadData() {
@@ -54,6 +55,7 @@ export default {
         this.categories = await callService('categories.list', {})
       } catch (error) {
         console.error('Errore nel caricamento delle categorie:', error)
+        toast.error('Errore durante il caricamento delle categorie.')
       }
     },
   },
@@ -67,14 +69,24 @@ export default {
 <style scoped>
 .category-item {
   margin-bottom: 10px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.85rem;
+  background: var(--app-surface);
 }
 
-.category-item .col {
-  padding: 5px;
+.category-item input[type='color'] {
+  width: 3rem;
+  height: 2.5rem;
+  padding: 0.2rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.65rem;
+  background: transparent;
 }
 
-button {
-  width: 150px;
-  text-align: center;
+@media (min-width: 576px) {
+  .w-sm-auto {
+    width: auto !important;
+  }
 }
 </style>

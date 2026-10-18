@@ -6,18 +6,18 @@
         @click="showFilters = !showFilters"
       >
         <i
-          class="fa-solid me-2"
-          :class="showFilters ? 'fa-eye-slash' : 'fa-eye'"
+          class="bi me-2"
+          :class="showFilters ? 'bi-eye-slash' : 'bi-eye'"
         ></i>
         {{ showFilters ? 'Nascondi Filtri' : 'Mostra Filtri' }}
       </button>
     </div>
 
-    <div class="filters-wrapper" :class="{ invisible: !showFilters }">
-      <div class="row mb-2 d-flex align-items-end justify-content-center">
-        <div class="col-12 col-md-3 mb-3">
+    <div v-if="showFilters" class="filters-wrapper chart-filters">
+      <div class="row g-3 align-items-end justify-content-center">
+        <div class="col-12 col-md-4">
           <div class="form-group">
-            <label for="startDate">Da</label>
+            <label for="startDate" class="chart-filter-label">Da</label>
             <input
               type="date"
               class="form-control"
@@ -26,9 +26,9 @@
             />
           </div>
         </div>
-        <div class="col-12 col-md-3 mb-3">
+        <div class="col-12 col-md-4">
           <div class="form-group">
-            <label for="endDate">A</label>
+            <label for="endDate" class="chart-filter-label">A</label>
             <input
               type="date"
               class="form-control"
@@ -37,11 +37,12 @@
             />
           </div>
         </div>
-        <div class="col-12 col-md-2">
+        <div class="col-12 col-md-4 col-lg-3">
           <button
-            class="btn btn-secondary ps-3 pe-3 w-100"
+            class="btn btn-primary chart-search-button w-100"
             @click="searchWithFilters"
           >
+            <i class="bi bi-search me-2" aria-hidden="true"></i>
             Cerca
           </button>
         </div>
@@ -53,7 +54,7 @@
         <div class="col-12 col-lg-5 mb-5 mb-lg-0">
           <table
             v-if="data && data.length > 0"
-            class="table table-bordered table-hover"
+            class="table table-bordered table-hover chart-summary-table"
           >
             <thead>
               <tr>
@@ -92,6 +93,7 @@ import { defineComponent } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import callService from '../services/api'
 import { MONTHS } from '../utils/constants'
+import { isDarkTheme } from '../utils/theme'
 
 function formatDateLocal(date) {
   return date.toLocaleDateString('sv-SE') // "YYYY-MM-DD"
@@ -116,6 +118,7 @@ export default defineComponent({
 
     return {
       showFilters: true,
+      isDarkTheme,
       filters: {
         startDate: firstDay,
         endDate: lastDay,
@@ -129,6 +132,23 @@ export default defineComponent({
         chart: {
           width: '100%',
           type: 'pie',
+          foreColor: isDarkTheme.value ? '#e8edf6' : '#202a3d',
+        },
+        theme: {
+          mode: isDarkTheme.value ? 'dark' : 'light',
+        },
+        tooltip: {
+          theme: isDarkTheme.value ? 'dark' : 'light',
+        },
+        legend: {
+          labels: {
+            colors: isDarkTheme.value ? '#e8edf6' : '#202a3d',
+          },
+        },
+        dataLabels: {
+          style: {
+            colors: ['#fff'],
+          },
         },
         labels: [],
         colors: [
@@ -158,6 +178,16 @@ export default defineComponent({
     }
   },
   watch: {
+    isDarkTheme(isDark) {
+      const color = isDark ? '#e8edf6' : '#202a3d'
+      this.chartOptions = {
+        ...this.chartOptions,
+        chart: { ...this.chartOptions.chart, foreColor: color },
+        theme: { mode: isDark ? 'dark' : 'light' },
+        tooltip: { theme: isDark ? 'dark' : 'light' },
+        legend: { ...this.chartOptions.legend, labels: { colors: color } },
+      }
+    },
     async user() {
       await this.loadData()
     },
@@ -215,7 +245,36 @@ export default defineComponent({
 .filters-wrapper {
   transition: visibility 0.1s linear;
 }
+
+.chart-filters {
+  max-width: 56rem;
+  margin: 0 auto 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #e7ebf2;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(27, 39, 65, 0.06);
+}
+
+.chart-filter-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #596579;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.chart-search-button {
+  min-height: 2.85rem;
+}
+
 .invisible {
   visibility: hidden;
+}
+
+@media (max-width: 767.98px) {
+  .chart-filters {
+    padding: 1rem;
+  }
 }
 </style>

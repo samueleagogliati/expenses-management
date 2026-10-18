@@ -1,53 +1,44 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Expenses from '../../src/pages/Expenses.vue'
-import Calendar from '../../src/pages/Calendar.vue'
-import LoginPage from '../../src/pages/LoginPage.vue'
-import SignupPage from '../../src/pages/SignupPage.vue'
-import Chart from '../../src/pages/Chart.vue'
-import SettingsPage from '../../src/pages/SettingsPage.vue'
-import Groups from '../../src/pages/Groups.vue'
-import ShowGroup from '../../src/pages/ShowGroup.vue'
 import { toast } from 'vue3-toastify'
-
-import { jwtDecode } from 'jwt-decode'
+import { getValidToken } from '../../src/utils/session'
 
 const routes = [
   {
     path: '/expenses',
-    component: Expenses,
+    component: () => import('../../src/pages/Expenses.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/',
-    component: Calendar,
+    component: () => import('../../src/pages/Calendar.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/login',
-    component: LoginPage,
+    component: () => import('../../src/pages/LoginPage.vue'),
   },
   {
     path: '/signup',
-    component: SignupPage,
+    component: () => import('../../src/pages/SignupPage.vue'),
   },
   {
     path: '/chart',
-    component: Chart,
+    component: () => import('../../src/pages/Chart.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/settings',
-    component: SettingsPage,
+    component: () => import('../../src/pages/SettingsPage.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/groups',
-    component: Groups,
+    component: () => import('../../src/pages/Groups.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/groups/:group_id',
-    component: ShowGroup,
+    component: () => import('../../src/pages/ShowGroup.vue'),
     meta: { requiresAuth: true },
   },
 ]
@@ -55,35 +46,20 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    return { top: 0, left: 0 }
+  },
 })
 
-function checkTokenValidity() {
-  const token = localStorage.getItem('token')
-  if (!token) {
-    return false
-  }
-  const decodedToken = jwtDecode(token)
-  const currentTime = Date.now() / 1000
-  if (decodedToken.exp < currentTime) {
-    return false
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth) {
+    if (!getValidToken()) {
+      toast.error('Effettuare il login!')
+      return '/login'
+    }
   }
   return true
-}
-
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth) {
-    const isTokenValid = checkTokenValidity()
-    if (isTokenValid) {
-      next()
-    } else {
-      toast.error('Effettuare il login!')
-      setTimeout(() => {
-        next('/login')
-      }, 3000)
-    }
-  } else {
-    next()
-  }
 })
 
 export default router

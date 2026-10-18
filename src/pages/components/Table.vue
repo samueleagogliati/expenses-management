@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="table-shell">
     <VueGoodTable
       ref="goodTable"
       max-height="100%"
@@ -33,7 +33,7 @@
       <template #table-row="props">
         <span v-if="props.column.label == ''">
           <button class="btn" @click="deleteRow(props.row.id)">
-            <i class="fa-solid fa-trash text-muted"></i>
+            <i class="bi bi-trash text-muted"></i>
           </button>
         </span>
       </template>
@@ -136,5 +136,15 @@ export default {
 }
 :deep(.vgt-table-summary .vgt-table-summary-item) {
   padding: 0.75rem 1rem;
+}
+
+.table-shell {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+:deep(.vgt-table) {
+  min-width: 640px;
 }
 </style>

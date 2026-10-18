@@ -4,19 +4,18 @@
       <div class="col-12 col-md-10 col-lg-8">
         <h1 class="mb-4 text-center">I Tuoi Gruppi</h1>
 
-        <transition-group name="list" tag="div" class="row g-3 g-md-4">
+        <div class="row g-3 g-md-4">
           <div
             class="col-12 col-sm-6"
-            v-for="(group, index) in groups"
+            v-for="group in groups"
             :key="group.id"
-            :style="{ 'transition-delay': `${index * 50}ms` }"
           >
             <div
               class="card h-100 shadow-sm border-0 rounded-4 group-card"
               @click="$router.push(`/groups/${group.id}`)"
             >
               <i
-                class="fas fa-times text-danger position-absolute top-0 end-0 m-2 delete-icon"
+                class="bi bi-x-lg text-danger position-absolute top-0 end-0 m-2 delete-icon"
                 @click.stop="deleteGroup(group.id)"
               ></i>
               <div
@@ -28,7 +27,7 @@
               </div>
             </div>
           </div>
-        </transition-group>
+        </div>
 
         <div class="text-center mt-4 mt-md-5">
           <button
@@ -52,20 +51,16 @@
 
 <script setup>
 import callService from '../services/api'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import AddGroupModal from './components/AddGroupModal.vue'
 const emit = defineEmits([])
-const groups = ref([])
 const props = defineProps({
   user: {
     type: Object,
     default: () => ({ groups: [] }),
   },
 })
-
-onMounted(async () => {
-  groups.value = props.user?.groups || []
-})
+const groups = ref(props.user?.groups || [])
 
 const reloadGroups = async () => {
   const res = await callService('users.getUser', { id: props.user.id })
@@ -83,15 +78,15 @@ const deleteGroup = async (groupId) => {
   background: #ffffff;
   border: 1px solid #f0f0f0;
   transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
   cursor: pointer;
 }
 .group-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
-  border-color: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07) !important;
+  border-color: #c9c5ff;
 }
 
 .card-title {
@@ -99,18 +94,8 @@ const deleteGroup = async (groupId) => {
   color: #333;
 }
 
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.4s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
 .delete-icon {
-  opacity: 0;
+  opacity: 0.7;
   transition: opacity 0.2s;
   cursor: pointer;
   z-index: 10;
@@ -120,9 +105,9 @@ const deleteGroup = async (groupId) => {
   opacity: 1;
 }
 
-@media (hover: none) {
+@media (hover: hover) {
   .delete-icon {
-    opacity: 1;
+    opacity: 0;
   }
 }
 

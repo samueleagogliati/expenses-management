@@ -1,20 +1,23 @@
 <template>
-  <Navbar :userLogged="userLogged" :user="user"></Navbar>
-  <router-view
-    v-if="!userLogged || user"
-    @login="loginDone"
+  <Navbar
+    :userLogged="userLogged"
     :user="user"
-    style="margin-top: 80px"
-  ></router-view>
+    @logout="logout"
+  ></Navbar>
+  <main class="app-content">
+    <router-view
+      v-if="!userLogged || user"
+      @login="loginDone"
+      :user="user"
+    ></router-view>
+  </main>
 </template>
 
 <script>
 import { jwtDecode } from 'jwt-decode'
 import Navbar from './pages/components/Navbar.vue'
-import 'bootstrap'
-import axios from 'axios'
 import callService from './services/api'
-import 'bootstrap-icons/font/bootstrap-icons.css'
+import { getValidToken } from './utils/session'
 
 export default {
   components: {
@@ -27,29 +30,33 @@ export default {
     }
   },
   methods: {
-    loginDone() {
-      this.userLogged = true
-      this.checkTokenValidity()
-    },
-    checkTokenValidity() {
-      const token = localStorage.getItem('token')
-      if (!token) {
+    async checkTokenValidity() {
+      const token = getValidToken()
+      if (!token) return false
+
+      try {
+        const { id } = jwtDecode(token)
+        this.user = await callService('users.getUser', { id })
+        return true
+      } catch (error) {
+        console.error('Errore durante il caricamento della sessione:', error)
+        localStorage.removeItem('token')
+        this.user = null
         return false
       }
-      const decodedToken = jwtDecode(token)
-      this.getUser(decodedToken.id)
-      const currentTime = Date.now() / 1000
-      if (decodedToken.exp < currentTime) {
-        return false
-      }
-      return true
     },
-    async getUser(userId) {
-      this.user = await callService('users.getUser', { id: userId })
+    async loginDone() {
+      this.userLogged = await this.checkTokenValidity()
+    },
+    logout() {
+      localStorage.removeItem('token')
+      this.user = null
+      this.userLogged = false
+      this.$router.push('/login')
     },
   },
-  mounted() {
-    this.userLogged = this.checkTokenValidity()
+  async mounted() {
+    this.userLogged = await this.checkTokenValidity()
   },
 }
 </script>

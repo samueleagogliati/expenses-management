@@ -52,9 +52,8 @@
 <script>
 import ExpensesTableVue from './components/ExpensesTable.vue'
 import callService from '../services/api'
-import { format } from 'date-fns'
-import moment from 'moment'
-import { MONTHS } from '../utils/constants'
+import { endOfMonth, format, startOfMonth } from 'date-fns'
+import { toast } from 'vue3-toastify'
 
 export default {
   components: {
@@ -67,18 +66,17 @@ export default {
     },
   },
   data() {
-    const startOfMonth = moment().startOf('month').format('YYYY-MM-DD')
-    const endOfMonth = moment().endOf('month').format('YYYY-MM-DD')
+    const startDate = format(startOfMonth(new Date()), 'yyyy-MM-dd')
+    const endDate = format(endOfMonth(new Date()), 'yyyy-MM-dd')
 
     return {
       expenses: null,
       categories: null,
       filters: {
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate,
+        endDate,
       },
       showFilters: true,
-      months: MONTHS,
     }
   },
 
@@ -100,21 +98,17 @@ export default {
       })
 
       if (resp.url) {
-        const fullUrl = `http://${window.location.hostname}:5001${resp.url}`
-        window.open(fullUrl, '_blank')
+        const exportUrl = new URL(resp.url, window.location.origin)
+        window.open(exportUrl, '_blank', 'noopener,noreferrer')
       } else {
-        this.$notify({
-          title: 'Errore',
-          message: `Errore durante la generazione del report`,
-          type: 'error',
-        })
+        toast.error('Errore durante la generazione del report.')
       }
     },
     async loadData() {
       if (!this.user) return
       try {
-        const startDate = moment(this.filters.startDate).format('YYYY-MM-DD')
-        const endDate = moment(this.filters.endDate).format('YYYY-MM-DD')
+        const startDate = this.filters.startDate
+        const endDate = this.filters.endDate
 
         const expenses = await callService('expenses.getListWithCategories', {
           startDate,
@@ -140,6 +134,10 @@ export default {
       this.showFilters = !this.showFilters
     },
     async searchWithFilters() {
+      if (this.filters.startDate > this.filters.endDate) {
+        toast.warning('La data iniziale deve precedere quella finale.')
+        return
+      }
       await this.loadData()
     },
   },
