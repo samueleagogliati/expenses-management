@@ -33,8 +33,6 @@
             <button
               class="w-100 calendar-button"
               @click="openModal(day)"
-              data-bs-toggle="modal"
-              data-bs-target="#dayModal"
               :aria-label="`Apri le spese del ${day}`"
             >
               {{ day }}
@@ -52,6 +50,7 @@
     <div
       class="modal fade"
       id="dayModal"
+      ref="dayModal"
       tabindex="-1"
       aria-labelledby="dayModal"
       aria-hidden="true"
@@ -183,6 +182,7 @@
 
 <script>
 import JustValidate from 'just-validate'
+import Modal from 'bootstrap/js/dist/modal'
 import {
   addMonths,
   eachDayOfInterval,
@@ -325,6 +325,8 @@ export default {
       this.newExpensePrice = ''
       this.selectedDate = setDate(this.currentDate, Number(day))
       this.selectedDay = 'Dettaglio ' + format(this.selectedDate, 'dd/MM/yyyy')
+      await this.$nextTick()
+      Modal.getOrCreateInstance(this.$refs.dayModal).show()
       await this.loadExpenses()
     },
     toggleSelect() {
@@ -406,6 +408,21 @@ export default {
     },
   },
   watch: {
+    user: {
+      immediate: true,
+      async handler(user) {
+        if (!user) return
+        try {
+          await Promise.all([
+            this.loadCategories(),
+            this.loadDataForDays(),
+            this.loadTotal(),
+          ])
+        } catch (error) {
+          console.error('Errore durante il caricamento del calendario:', error)
+        }
+      },
+    },
     async currentMonth() {
       if (this.user) {
         await this.loadDataForDays()
@@ -418,13 +435,6 @@ export default {
         await this.loadTotal()
       }
     },
-  },
-  async mounted() {
-    if (this.user) {
-      await this.loadCategories()
-      await this.loadDataForDays()
-      await this.loadTotal()
-    }
   },
 }
 </script>
