@@ -21,31 +21,68 @@ async function getWorker(onProgress) {
   return workerPromise
 }
 
-// Scala di grigi + stiramento del contrasto: migliora molto la lettura
-function preprocess(dataUrl) {
+// Due varianti dell'immagine: scala di grigi con contrasto, e binarizzata
+// con soglia adattiva (regge meglio ombre, pieghe e luce non uniforme).
+function preprocess(dataUrl, mode) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
-      const scale = img.width < 1400 ? 1400 / img.width : 1
+      const target = 2000
+      const scale = img.width < target ? target / img.width : 1
+      const w = Math.round(img.width * scale)
+      const h = Math.round(img.height * scale)
       const c = document.createElement('canvas')
-      c.width = Math.round(img.width * scale)
-      c.height = Math.round(img.height * scale)
+      c.width = w
+      c.height = h
       const ctx = c.getContext('2d')
-      ctx.drawImage(img, 0, 0, c.width, c.height)
-      const d = ctx.getImageData(0, 0, c.width, c.height)
+      ctx.drawImage(img, 0, 0, w, h)
+      const d = ctx.getImageData(0, 0, w, h)
       const px = d.data
+      const gray = new Uint8ClampedArray(w * h)
       let min = 255
       let max = 0
-      for (let i = 0; i < px.length; i += 4) {
+      for (let i = 0, j = 0; i < px.length; i += 4, j++) {
         const g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]
-        px[i] = g
+        gray[j] = g
         if (g < min) min = g
         if (g > max) max = g
       }
-      const range = Math.max(1, max - min)
-      for (let i = 0; i < px.length; i += 4) {
-        const v = ((px[i] - min) * 255) / range
-        px[i] = px[i + 1] = px[i + 2] = v
+
+      let out = gray
+      if (mode === 'bin') {
+        // soglia adattiva con immagine integrale: pixel scuro se < media locale - 10%
+        const integral = new Float64Array((w + 1) * (h + 1))
+        for (let y = 0; y < h; y++) {
+          let row = 0
+          for (let x = 0; x < w; x++) {
+            row += gray[y * w + x]
+            integral[(y + 1) * (w + 1) + x + 1] = integral[y * (w + 1) + x + 1] + row
+          }
+        }
+        const r = Math.max(15, Math.round(w / 24))
+        out = new Uint8ClampedArray(w * h)
+        for (let y = 0; y < h; y++) {
+          const y0 = Math.max(0, y - r)
+          const y1 = Math.min(h, y + r + 1)
+          for (let x = 0; x < w; x++) {
+            const x0 = Math.max(0, x - r)
+            const x1 = Math.min(w, x + r + 1)
+            const sum =
+              integral[y1 * (w + 1) + x1] -
+              integral[y0 * (w + 1) + x1] -
+              integral[y1 * (w + 1) + x0] +
+              integral[y0 * (w + 1) + x0]
+            const mean = sum / ((x1 - x0) * (y1 - y0))
+            out[y * w + x] = gray[y * w + x] < mean * 0.9 ? 0 : 255
+          }
+        }
+      } else {
+        const range = Math.max(1, max - min)
+        out = gray.map((v) => ((v - min) * 255) / range)
+      }
+
+      for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+        px[i] = px[i + 1] = px[i + 2] = out[j]
       }
       ctx.putImageData(d, 0, 0)
       resolve(c.toDataURL('image/png'))
@@ -53,6 +90,18 @@ function preprocess(dataUrl) {
     img.onerror = () => reject(new Error('Immagine non valida'))
     img.src = dataUrl
   })
+}
+
+// Corregge le confusioni tipiche dell'OCR nel prezzo a fine riga (O→0, l→1, S→5…)
+function fixTrailingPrice(line) {
+  return line.replace(
+    /([\dOoIlSsB|]{1,4})\s?[.,]\s?([\dOoIlSsB|]{2})(\s*[A-Za-z*]?)\s*$/,
+    (m, a, b, tail) => {
+      const fix = (t) =>
+        t.replace(/[Oo]/g, '0').replace(/[Il|]/g, '1').replace(/[Ss]/g, '5').replace(/B/g, '8')
+      return `${fix(a)},${fix(b)}${tail}`
+    },
+  )
 }
 
 const SKIP =
@@ -92,12 +141,16 @@ export function parseReceiptDate(text) {
   return null
 }
 
-export function parseReceiptText(text) {
+export function parseReceiptText(text, lineConf = []) {
   const items = []
   let total = null
 
-  for (const raw of text.split('\n')) {
-    const line = raw.replace(/[|_~]/g, ' ').replace(/\s+/g, ' ').trim()
+  const rawLines = text.split('\n')
+  for (let li = 0; li < rawLines.length; li++) {
+    const raw = rawLines[li]
+    const line = fixTrailingPrice(
+      raw.replace(/[|_~]/g, ' ').replace(/\s+/g, ' ').trim(),
+    )
     if (line.length < 4) continue
 
     const prices = [...line.matchAll(PRICE)]
@@ -127,16 +180,55 @@ export function parseReceiptText(text) {
     if (/\bsconto|promo|offerta|riduz/i.test(description) && price > 0) {
       price = -price
     }
-    items.push({ description, price })
+    items.push({ description, price, check: (lineConf[li] ?? 100) < 70 })
   }
   return { items, total, date: parseReceiptDate(text) }
 }
 
+// Punteggio di un risultato: più è alto, più è affidabile
+function score(res) {
+  if (!res.items.length) return -Infinity
+  const sum = res.items.reduce((acc, i) => acc + i.price, 0)
+  let sc = res.items.length
+  if (res.total !== null) {
+    const diff = Math.abs(sum - res.total)
+    sc += diff < 0.015 ? 1000 : -Math.min(diff, 100)
+  }
+  sc -= res.items.filter((i) => i.check).length * 0.5
+  return sc
+}
+
+async function recognizeVariant(worker, dataUrl, mode) {
+  const image = await preprocess(dataUrl, mode)
+  const { data } = await worker.recognize(image, {}, { text: true, blocks: true })
+  // confidenza per riga, allineata alle righe del testo
+  const lines = (data.blocks || []).flatMap((b) =>
+    b.paragraphs.flatMap((p) => p.lines),
+  )
+  const text = lines.length ? lines.map((l) => l.text.trim()).join('\n') : data.text
+  const conf = lines.length ? lines.map((l) => l.confidence) : []
+  return parseReceiptText(text || '', conf)
+}
+
 export async function scanReceipt(dataUrl, onProgress) {
-  const [worker, image] = await Promise.all([
-    getWorker(onProgress),
-    preprocess(dataUrl),
-  ])
-  const { data } = await worker.recognize(image)
-  return parseReceiptText(data.text || '')
+  let pass = 0
+  const worker = await getWorker((p) => onProgress?.((pass + p) / 2))
+  await worker.setParameters({
+    tessedit_pageseg_mode: '6', // un unico blocco di testo: ideale per scontrini
+    preserve_interword_spaces: '1',
+    user_defined_dpi: '300',
+  })
+
+  const results = []
+  for (const mode of ['gray', 'bin']) {
+    try {
+      results.push(await recognizeVariant(worker, dataUrl, mode))
+    } catch (e) {
+      console.warn('OCR variante fallita:', mode, e)
+    }
+    pass++
+    onProgress?.(pass / 2)
+  }
+  if (!results.length) throw new Error('OCR non riuscito')
+  return results.sort((a, b) => score(b) - score(a))[0]
 }

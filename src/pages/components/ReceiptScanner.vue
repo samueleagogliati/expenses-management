@@ -94,6 +94,11 @@
                     class="item-desc"
                     aria-label="Descrizione"
                   />
+                  <i
+                    v-if="item.check"
+                    class="bi bi-exclamation-circle item-check"
+                    title="Lettura incerta: controlla"
+                  ></i>
                   <input
                     v-model="item.price"
                     class="item-price"
@@ -291,6 +296,7 @@ const analyze = async () => {
       description: i.description,
       price: i.price.toFixed(2).replace('.', ','),
       owner: null,
+      check: !!i.check,
     }))
     receiptTotal.value = resp.total
     receiptDate.value = resp.date || format(new Date(), 'yyyy-MM-dd')
@@ -553,6 +559,11 @@ const apply = () => {
 .item-price:focus {
   border-bottom-color: var(--app-primary);
   outline: 0;
+}
+
+.item-check {
+  color: #d97706;
+  font-size: 0.9rem;
 }
 
 .item-del {
