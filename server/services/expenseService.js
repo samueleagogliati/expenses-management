@@ -1,6 +1,7 @@
 import Expense from '../models/expense.js'
 import Category from '../models/category.js'
 import moment from 'moment'
+import parseDecimal from '../helpers/parseDecimal.js'
 
 const list = (userId, startDate, endDate) => {
   let start = moment(startDate).format('YYYY-MM-DD')
@@ -45,13 +46,13 @@ export default {
     let end = moment(endDate).endOf('day').toDate()
 
     let collection = Category.query()
-      .select('categories.id', 'categories.description')
+      .select('categories.id', 'categories.description', 'categories.color')
       .leftJoin('expenses', function () {
         this.on('expenses.category_id', '=', 'categories.id')
-          .andOn('expenses.user_id', '=', userId)
+          .andOn(Category.raw('expenses.user_id = ?', [Number(userId)]))
           .andOnBetween('expenses.date', [start, end])
       })
-      .groupBy('categories.id', 'categories.description')
+      .groupBy('categories.id', 'categories.description', 'categories.color')
       .orderBy('categories.description')
       .sum('expenses.price as total')
     return await collection
@@ -59,9 +60,13 @@ export default {
 
   async createExpense(params) {
     try {
-      const { price, category_id, description, date, user_id } = params
+      const { category_id, description, date, user_id } = params
+      const price = parseDecimal(params.price)
 
-      if (!price || !category_id || !description || !date || !user_id) {
+      if (Number.isNaN(price) || price < 0) {
+        throw new Error('Prezzo non valido')
+      }
+      if (!category_id || !description || !date || !user_id) {
         throw new Error('Tutti i campi sono obbligatori')
       }
       const newExpense = await Expense.query().insert({
@@ -84,10 +89,19 @@ export default {
 
   async updateExpense(params) {
     try {
-      const { id, ...updatedFields } = params
+      const { id, ...rest } = params
+      const allowed = ['category_id', 'description', 'price']
+      const updatedFields = Object.fromEntries(
+        Object.entries(rest).filter(([k]) => allowed.includes(k)),
+      )
 
       if (!id) {
         throw new Error('ID mancante')
+      }
+      if ('price' in updatedFields) {
+        const price = parseDecimal(updatedFields.price)
+        if (Number.isNaN(price) || price < 0) throw new Error('Prezzo non valido')
+        updatedFields.price = price
       }
       const expense = await Expense.query().findById(id)
       if (!expense) {

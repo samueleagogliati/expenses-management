@@ -54,11 +54,11 @@ html[data-theme='dark'] {
 
 html {
   background: #f5f7fb;
-  scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
+  overflow-x: hidden;
   margin: 0;
   background:
     radial-gradient(
@@ -148,9 +148,9 @@ h6 {
   border-radius: 0.75rem;
   font-weight: 650;
   transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
 }
 
 .btn:active {
@@ -158,8 +158,21 @@ h6 {
 }
 
 .btn-primary {
-  border-color: var(--app-primary);
-  background: var(--app-primary);
+  border-color: transparent;
+  background: linear-gradient(135deg, #5146e5, #7467f3);
+  box-shadow: 0 6px 16px rgba(81, 70, 229, 0.22);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  border-color: transparent;
+  background: linear-gradient(135deg, #463bd6, #6a5ce8);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  border-color: transparent;
+  background: #463bd6;
 }
 
 .table-responsive,

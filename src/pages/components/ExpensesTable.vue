@@ -4,7 +4,8 @@
     :items="expenses"
     :columns="columns"
     v-if="expenses && expenses.length > 0"
-    :summaryRowEnabled="true"
+    :summaryRowEnabled="false"
+    :categories="categories"
   >
   </Table>
 </template>
@@ -47,7 +48,7 @@ export default {
           label: 'Descrizione',
           field: 'description',
           footerFn: () => {
-            return '<strong class="text-dark d-block text-end">Totale</strong>'
+            return '<strong class="d-block text-end">Totale</strong>'
           },
           filterOptions: {
             styleClass: 'class1',
@@ -60,6 +61,8 @@ export default {
         {
           label: 'Prezzo',
           field: 'price',
+          thClass: 'text-end',
+          tdClass: 'text-end',
           filterOptions: {
             styleClass: 'class1',
             enabled: true,
@@ -70,7 +73,7 @@ export default {
           type: 'decimal',
           formatFn: this.formatPrice,
           footerFn: () => {
-            return `<strong class="text-dark d-block text-end">${this.formatPrice(this.totalExpenses)}</strong>`
+            return `<strong class="d-block text-end">${this.formatPrice(this.totalExpenses)}</strong>`
           },
         },
         {

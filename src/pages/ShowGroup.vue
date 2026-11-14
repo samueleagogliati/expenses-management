@@ -9,12 +9,13 @@
   </div>
 
   <div v-else-if="group" class="container-fluid px-md-4 py-3 mb-5">
-    <div class="position-absolute top-0 start-0 p-3">
-      <Notes :user="user" />
-    </div>
-    <h1 class="text-center mt-5 h3 text-break group-title">
-      {{ group?.name?.toUpperCase() }}
-    </h1>
+    <Notes :user="user" />
+    <header class="group-head">
+      <router-link to="/groups" class="group-back" aria-label="Torna ai gruppi">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      </router-link>
+      <h1 class="group-title text-break">{{ group?.name }}</h1>
+    </header>
     <GroupDebtsForm
       :key="formKey"
       :group="group"
@@ -31,7 +32,7 @@
     />
     <div class="text-center my-4" v-if="groupDebts.length">
       <button
-        class="btn btn-outline-custom w-100 w-sm-auto rounded-pill px-4"
+        class="btn btn-outline-custom rounded-pill px-4"
         @click="showDebtsTable = !showDebtsTable"
       >
         <i
@@ -61,7 +62,7 @@ import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import callService from '../services/api'
 import { toast } from 'vue3-toastify'
-import dayjs from 'dayjs'
+import { format } from 'date-fns'
 import Notes from './components/Notes.vue'
 import GroupDebtsForm from './components/GroupDebtsForm.vue'
 import DebtsSummary from './components/DebtsSummary.vue'
@@ -127,7 +128,7 @@ watch(
 const handleEditDebt = async (debt) => {
   let expenseForForm = {}
   try {
-    const date = dayjs(debt.date).format('YYYY-MM-DD')
+    const date = format(new Date(debt.date), 'yyyy-MM-dd')
     const groupUserIds = group.value.users.map((u) => u.id)
     let allRelevantExpenses = []
 
@@ -201,40 +202,57 @@ const onDebtSaved = () => {
 </script>
 
 <style lang="scss" scoped>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #fcfcfc;
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 880px;
+  margin: 0 auto 1.25rem;
+  padding: 0 0.75rem;
 }
 
-@media (min-width: 576px) {
-  .w-sm-auto {
-    width: auto !important;
+.group-back {
+  display: grid;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  background: var(--app-surface);
+  color: var(--app-ink);
+  transition:
+    border-color 140ms ease,
+    color 140ms ease;
+
+  &:hover {
+    border-color: var(--app-primary);
+    color: var(--app-primary);
   }
 }
 
 .group-title {
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #333;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
 }
 
 .group-loading {
   min-height: 16rem;
-  color: #738096;
+  color: var(--app-muted);
 }
 
 .btn-outline-custom {
-  border: 2px solid #333;
-  color: #333;
-  font-weight: 600;
-  transition: all 0.3s;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-ink);
+  font-weight: 650;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease;
 
   &:hover {
-    background-color: #333;
-    color: #fff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border-color: var(--app-primary);
+    color: var(--app-primary);
   }
 }
 </style>

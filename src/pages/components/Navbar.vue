@@ -3,7 +3,7 @@
     <div class="container-fluid app-navbar-inner">
       <router-link to="/" class="navbar-brand">
         <img
-          src="/logo.jpeg"
+          src="/logo.svg"
           alt="Logo"
           width="30"
           height="30"
@@ -187,10 +187,9 @@ export default {
 .app-navbar {
   min-height: 72px;
   padding: 0.65rem clamp(0.75rem, 3vw, 2.5rem);
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid rgba(20, 32, 55, 0.08);
   box-shadow: 0 8px 30px rgba(20, 32, 55, 0.06);
-  backdrop-filter: blur(16px);
 }
 
 .app-navbar-inner {
@@ -198,7 +197,8 @@ export default {
 }
 
 .navbar-brand img {
-  border-radius: 50%;
+  margin-right: 0.35rem;
+  border-radius: 8px;
 }
 
 .navbar-brand {
@@ -359,7 +359,6 @@ export default {
     border-radius: 1.25rem;
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 18px 48px rgba(27, 39, 65, 0.14);
-    backdrop-filter: blur(18px);
   }
 
   .mobile-menu-heading {

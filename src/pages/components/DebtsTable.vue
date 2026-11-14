@@ -15,7 +15,7 @@
       </div>
       <div v-else>&nbsp;</div>
       <button
-        class="btn btn-outline-danger btn-sm"
+        class="btn btn-sm clean-btn"
         :class="{ invisible: !hasCompletedDebts }"
         @click="deleteDisabledDebt"
       >
@@ -24,7 +24,7 @@
       </button>
     </div>
     <div
-      class="row debt-item align-items-center py-3 px-2 border-bottom"
+      class="row debt-item align-items-center py-3 px-2"
       v-for="debt in groupDebts"
       :key="debt.id"
     >
@@ -40,21 +40,15 @@
         </p>
       </div>
       <div class="col-auto d-flex">
-        <i
-          class="bi bi-pencil text-primary me-3"
-          style="cursor: pointer"
-          @click="$emit('edit-debt', debt)"
-        ></i>
-        <i
-          class="bi bi-eye-slash text-primary me-3"
-          style="cursor: pointer"
-          @click="toggleDisabled(debt)"
-        ></i>
-        <i
-          class="bi bi-trash text-danger"
-          style="cursor: pointer"
-          @click="deleteDebt(debt)"
-        ></i>
+        <button class="icon-btn" type="button" aria-label="Modifica" @click="$emit('edit-debt', debt)">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="icon-btn" type="button" :aria-label="debt.disabled ? 'Riattiva' : 'Segna come saldato'" @click="toggleDisabled(debt)">
+          <i class="bi" :class="debt.disabled ? 'bi-eye' : 'bi-eye-slash'"></i>
+        </button>
+        <button class="icon-btn danger" type="button" aria-label="Elimina" @click="deleteDebt(debt)">
+          <i class="bi bi-trash3"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -64,7 +58,8 @@
 import { computed } from 'vue'
 import callService from '../../services/api'
 import { toast } from 'vue3-toastify'
-import dayjs from 'dayjs'
+import { formatEuro } from '../../utils/number'
+import { format } from 'date-fns'
 
 const props = defineProps({
   groupDebts: {
@@ -92,11 +87,11 @@ const allDisabled = computed(() => {
 
 const formatDate = (date) => {
   if (!date) return ''
-  return dayjs(date).format('DD/MM/YY')
+  return format(new Date(date), 'dd/MM/yy')
 }
 
 const printDebt = (debt) => {
-  return `${debt.payer.firstname} deve a ${debt.receiver.firstname} ${debt.price}€ di`
+  return `${debt.payer.firstname} deve a ${debt.receiver.firstname} ${formatEuro(debt.price)} di`
 }
 
 const disableAll = computed({
@@ -168,20 +163,52 @@ const deleteDisabledDebt = async () => {
 <style scoped>
 .debts-list {
   max-height: 40vh;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
+
 .debt-item {
-  transition: background-color 0.2s ease-in-out;
-  border-radius: 8px;
+  border-bottom: 1px solid var(--app-border);
+  transition: background-color 140ms ease;
 }
+
 .debt-item:hover {
-  background-color: #f8f9fa;
+  background-color: color-mix(in srgb, var(--app-primary) 5%, transparent);
 }
-.debt-item .col-auto i {
-  opacity: 0.5;
-  transition: opacity 0.2s ease-in-out;
+
+.clean-btn {
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: #ef4444;
 }
-.debt-item:hover .col-auto i {
-  opacity: 1;
+
+.clean-btn:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+.icon-btn {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  margin-left: 0.15rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--app-muted);
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.icon-btn:hover {
+  background: color-mix(in srgb, var(--app-primary) 12%, transparent);
+  color: var(--app-primary);
+}
+
+.icon-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
 }
 </style>

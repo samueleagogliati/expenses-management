@@ -1,6 +1,6 @@
 <template>
   <div class="notes-button-container">
-    <ButtonNote />
+    <ButtonNote :count="notes.length" />
   </div>
   <Modal
     modal-id="notesModal"
@@ -48,7 +48,7 @@
           class="form-control py-2 fs-5"
           placeholder="Aggiungi nota"
         />
-        <button @click="addNote" class="btn py-2 btn-dark">
+        <button @click="addNote" class="btn py-2 btn-primary">
           <i class="bi bi-plus-lg"></i>
         </button>
       </div>
@@ -118,27 +118,6 @@ const handleClose = async () => {
 </script>
 
 <style lang="scss" scoped>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
-}
-
-.note-icon {
-  fill: #3b8bdb;
-  border-radius: 8px;
-  padding: 6px;
-  background-color: #f5f5f5;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.2s ease,
-    fill 0.3s;
-}
-
-.note-icon:hover {
-  transform: scale(1.1);
-  fill: #1e88e5;
-}
-
 .form-control {
   background-color: transparent;
   border-top: 0;

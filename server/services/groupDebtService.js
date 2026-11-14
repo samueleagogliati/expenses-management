@@ -2,6 +2,7 @@ import GroupDebt from '../models/groupDebt.js'
 import Expense from '../models/expense.js'
 import Group from '../models/group.js'
 import moment from 'moment'
+import parseDecimal from '../helpers/parseDecimal.js'
 
 export default {
   async list() {
@@ -16,9 +17,9 @@ export default {
       const formattedDate = new Date(date)
 
       for (const [userId, amount] of Object.entries(splits)) {
-        if (parseFloat(amount) > 0) {
+        if (parseDecimal(amount) > 0) {
           const expense = await Expense.query().insert({
-            price: parseFloat(amount),
+            price: parseDecimal(amount),
             description,
             category_id: categoryId,
             user_id: parseInt(userId, 10),
@@ -31,14 +32,14 @@ export default {
       for (const [userId, amount] of Object.entries(splits)) {
         if (
           parseInt(userId, 10) !== parseInt(payerId, 10) &&
-          parseFloat(amount) > 0
+          parseDecimal(amount) > 0
         ) {
           const userExpense = createdExpenses.find((e) => e.user_id == userId)
           await GroupDebt.query().insert({
             group_id: groupId,
             payer_id: parseInt(userId, 10),
             receiver_id: parseInt(payerId, 10),
-            price: parseFloat(amount),
+            price: parseDecimal(amount),
             date: formattedDate,
             description,
             disabled: false,

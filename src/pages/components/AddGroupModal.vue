@@ -9,8 +9,8 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content rounded-4">
         <div class="modal-header">
-          <h3 class="modal-title text-center w-100" id="addGroupModalLabel">
-            Gruppo
+          <h3 class="modal-title h5 w-100" id="addGroupModalLabel">
+            Nuovo gruppo
           </h3>
 
           <button
@@ -54,7 +54,7 @@
             </div>
 
             <div class="text-end mt-3">
-              <button type="submit" class="btn btn-dark">Salva</button>
+              <button type="submit" class="btn btn-primary px-4">Salva</button>
             </div>
           </ValidatedForm>
         </div>

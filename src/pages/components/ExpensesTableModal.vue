@@ -3,15 +3,15 @@
     <table class="table table-bordered table-hover">
       <thead>
         <tr>
-          <th class="bg-light">Categoria</th>
-          <th class="bg-light">Descrizione</th>
-          <th class="bg-light">Prezzo</th>
-          <th class="bg-light"></th>
-          <th class="bg-light"></th>
+          <th>Categoria</th>
+          <th>Descrizione</th>
+          <th>Prezzo</th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(expense, index) in expenses" :key="index">
+        <tr v-for="expense in expenses" :key="expense.id">
           <td class="align-middle">
             <div class="control-wrapper" v-if="expense.editMode">
               <select
@@ -36,6 +36,7 @@
               v-if="expense.editMode"
               v-model="expense.description"
               class="form-control"
+              @keydown.enter.prevent="editedExpense(expense)"
             />
             <span v-else>{{ expense.description }}</span>
           </td>
@@ -43,7 +44,9 @@
             <input
               v-if="expense.editMode"
               v-model="expense.price"
+              inputmode="decimal"
               class="form-control"
+              @keydown.enter.prevent="editedExpense(expense)"
             />
             <span v-else>{{ formatPrice(expense.price) }}</span>
           </td>
@@ -70,6 +73,7 @@
 
 <script>
 import callService from '../../services/api'
+import { formatEuro } from '../../utils/number'
 export default {
   data() {
     return {
@@ -97,7 +101,7 @@ export default {
       }
     },
     formatPrice(value) {
-      return value + ' €'
+      return formatEuro(value)
     },
     async deleteExpense(expenseId) {
       if (confirm('Sei sicuro di voler eliminare questa spesa?')) {

@@ -1,51 +1,55 @@
 <template>
-  <div class="container py-3">
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-10 col-lg-8">
-        <h1 class="mb-4 text-center">I Tuoi Gruppi</h1>
-
-        <div class="row g-3 g-md-4">
-          <div
-            class="col-12 col-sm-6"
-            v-for="group in groups"
-            :key="group.id"
-          >
-            <div
-              class="card h-100 shadow-sm border-0 rounded-4 group-card"
-              @click="$router.push(`/groups/${group.id}`)"
-            >
-              <i
-                class="bi bi-x-lg text-danger position-absolute top-0 end-0 m-2 delete-icon"
-                @click.stop="deleteGroup(group.id)"
-              ></i>
-              <div
-                class="card-body text-center d-flex flex-column justify-content-center py-4"
-              >
-                <h3 class="card-title mb-0 text-uppercase h5">
-                  {{ group.name }}
-                </h3>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-center mt-4 mt-md-5">
-          <button
-            class="btn btn-dark btn-lg px-4 py-3 rounded-pill shadow w-100 w-sm-auto"
-            data-bs-toggle="modal"
-            data-bs-target="#addGroupModal"
-          >
-            <i class="bi bi-plus-circle me-2"></i> Aggiungi Gruppo
-          </button>
-        </div>
-
-        <AddGroupModal
-          :groups="groups"
-          :user="props.user"
-          @refreshUser="reloadGroups"
-        />
+  <div class="container groups-page">
+    <header class="groups-head">
+      <div>
+        <h1 class="groups-title">Gruppi</h1>
       </div>
+      <button
+        class="btn btn-primary add-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#addGroupModal"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        <span>Nuovo gruppo</span>
+      </button>
+    </header>
+
+    <div v-if="groups.length" class="groups-grid">
+      <article
+        v-for="group in groups"
+        :key="group.id"
+        class="group-card"
+        tabindex="0"
+        role="link"
+        @click="$router.push(`/groups/${group.id}`)"
+        @keydown.enter="$router.push(`/groups/${group.id}`)"
+      >
+        <span class="group-avatar" aria-hidden="true">
+          {{ (group.name || '?').charAt(0).toUpperCase() }}
+        </span>
+        <h2 class="group-name">{{ group.name }}</h2>
+        <i class="bi bi-chevron-right group-arrow" aria-hidden="true"></i>
+        <button
+          class="group-delete"
+          type="button"
+          aria-label="Elimina gruppo"
+          @click.stop="deleteGroup(group.id)"
+        >
+          <i class="bi bi-trash3"></i>
+        </button>
+      </article>
     </div>
+
+    <div v-else class="groups-empty">
+      <i class="bi bi-people" aria-hidden="true"></i>
+      <p>Non hai ancora nessun gruppo</p>
+    </div>
+
+    <AddGroupModal
+      :groups="groups"
+      :user="props.user"
+      @refreshUser="reloadGroups"
+    />
   </div>
 </template>
 
@@ -53,7 +57,6 @@
 import callService from '../services/api'
 import { ref } from 'vue'
 import AddGroupModal from './components/AddGroupModal.vue'
-const emit = defineEmits([])
 const props = defineProps({
   user: {
     type: Object,
@@ -68,52 +71,141 @@ const reloadGroups = async () => {
 }
 
 const deleteGroup = async (groupId) => {
+  if (!confirm('Eliminare questo gruppo?')) return
   await callService('groups.deleteGroup', { group_id: groupId })
   reloadGroups()
 }
 </script>
 
 <style scoped>
+.groups-page {
+  max-width: 880px;
+}
+
+.groups-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.groups-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+}
+
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.9rem;
+}
+
 .group-card {
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.15rem;
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow);
+  cursor: pointer;
   transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    border-color 160ms ease;
-  cursor: pointer;
+    transform 140ms ease,
+    border-color 140ms ease;
 }
-.group-card:hover {
+
+.group-card:hover,
+.group-card:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07) !important;
-  border-color: #c9c5ff;
+  border-color: var(--app-primary);
 }
 
-.card-title {
-  font-weight: 700;
-  color: #333;
+.group-avatar {
+  display: grid;
+  flex: none;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #5146e5, #7c6cf5);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 750;
 }
 
-.delete-icon {
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  cursor: pointer;
-  z-index: 10;
+.group-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.group-card:hover .delete-icon {
-  opacity: 1;
+.group-arrow {
+  color: var(--app-muted);
+  transition: transform 140ms ease;
 }
 
-@media (hover: hover) {
-  .delete-icon {
-    opacity: 0;
-  }
+.group-card:hover .group-arrow {
+  color: var(--app-primary);
+  transform: translateX(2px);
 }
 
-@media (min-width: 576px) {
-  .w-sm-auto {
-    width: auto !important;
+.group-delete {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--app-muted);
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.group-delete:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.groups-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  border: 1px dashed var(--app-border);
+  border-radius: 1.25rem;
+  color: var(--app-muted);
+}
+
+.groups-empty .bi {
+  font-size: 2.4rem;
+  opacity: 0.6;
+}
+
+.groups-empty p {
+  margin: 0;
+}
+
+@media (max-width: 575.98px) {
+  .add-btn span {
+    display: none;
   }
 }
 </style>

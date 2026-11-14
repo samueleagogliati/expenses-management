@@ -9,16 +9,11 @@
     <div class="container mt-3">
       <div class="row justify-content-center">
         <div class="col-12 col-md-10 col-lg-8">
-          <div class="card p-3 p-md-4 shadow-custom border-0 rounded-4">
+          <div class="card p-3 p-md-4 form-card">
             <div class="card-body">
               <div class="row justify-content-center mb-4">
                 <div class="col-12 col-sm-6">
-                  <input
-                    type="date"
-                    class="form-control text-center bg-light border-0 rounded-pill"
-                    id="debtDate"
-                    v-model="debtDate"
-                  />
+                  <DateField v-model="debtDate" input-class="df-input text-center" />
                 </div>
               </div>
               <div class="row g-3 mb-3">
@@ -29,7 +24,8 @@
                     id="price"
                     name="price"
                     class="form-control"
-                    placeholder="€ 0.00"
+                    inputmode="decimal"
+                    placeholder="€ 0,00"
                   />
                 </div>
                 <div class="col-8 col-md-5">
@@ -96,7 +92,8 @@
                   <span class="input-group-text">{{ user.firstname }}</span>
                   <input
                     class="form-control"
-                    v-model.number="customSplits[user.id]"
+                    v-model="customSplits[user.id]"
+                    inputmode="decimal"
                     @input="adjustCustomSplits(user.id)"
                   />
                 </div>
@@ -104,7 +101,7 @@
 
               <div class="text-center mt-4">
                 <button
-                  class="btn btn-gradient w-100 w-sm-auto px-5 py-3 text-uppercase rounded-pill fw-bold shadow-sm"
+                  class="btn btn-primary save-btn"
                   type="submit"
                 >
                   {{ isEditMode ? 'Aggiorna' : 'Salva' }}
@@ -123,8 +120,10 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import callService from '../../services/api'
 import ValidatedForm from './ValidatedForm.vue'
+import DateField from './DateField.vue'
 import { toast } from 'vue3-toastify'
-import dayjs from 'dayjs'
+import { format } from 'date-fns'
+import { isValidDecimal, parseDecimal } from '../../utils/number'
 
 const emit = defineEmits(['debt-saved'])
 const props = defineProps({
@@ -152,7 +151,7 @@ const customSplits = ref({})
 const payerId = ref('')
 const route = useRoute()
 const groupId = route.params.group_id
-const debtDate = ref(dayjs().format('YYYY-MM-DD'))
+const debtDate = ref(format(new Date(), 'yyyy-MM-dd'))
 const debtFormValidator = ref(null)
 
 const isEditMode = computed(() => !!props.expenseToEdit)
@@ -162,7 +161,10 @@ const fields = [
     selector: '#price',
     rules: [
       { rule: 'required', errorMessage: 'Il prezzo è obbligatorio' },
-      { rule: 'number', errorMessage: 'Inserisci un numero' },
+      {
+        validator: (value) => isValidDecimal(value) && parseDecimal(value) > 0,
+        errorMessage: 'Inserisci un importo valido (es. 12,50)',
+      },
     ],
   },
   {
@@ -186,7 +188,7 @@ onMounted(async () => {
     description.value = expense.description
     selectedCategory.value = expense.category?.id || expense.category_id
     payerId.value = expense.user_id
-    debtDate.value = dayjs(expense.date).format('YYYY-MM-DD')
+    debtDate.value = format(new Date(expense.date), 'yyyy-MM-dd')
 
     if (expense.splits) {
       customSplits.value = expense.splits
@@ -204,7 +206,10 @@ const initGroupData = () => {
     payerId.value = groupUsers.value[0].id
   }
   if (props.categories.length) {
-    selectedCategory.value = props.categories[0].id
+    const preferred = props.categories.find(
+      (c) => c.description?.trim().toLowerCase() === 'spesa',
+    )
+    selectedCategory.value = (preferred || props.categories[0]).id
   }
   customSplits.value = Object.fromEntries(
     groupUsers.value.map((u) => [u.id, 0]),
@@ -212,9 +217,9 @@ const initGroupData = () => {
 }
 
 const adjustCustomSplits = (changedUserId) => {
-  if (!price.value) return
-  const total = parseFloat(price.value)
-  let val = parseFloat(customSplits.value[changedUserId])
+  const total = parseDecimal(price.value)
+  if (Number.isNaN(total)) return
+  let val = parseDecimal(customSplits.value[changedUserId])
   if (isNaN(val)) val = 0
 
   const otherUsers = groupUsers.value.filter((u) => u.id !== changedUserId)
@@ -235,6 +240,22 @@ const adjustCustomSplits = (changedUserId) => {
   })
 }
 
+const buildParams = () => ({
+  price: parseDecimal(price.value),
+  description: description.value.trim(),
+  categoryId: selectedCategory.value,
+  payerId: payerId.value,
+  splitType: splitType.value,
+  splits: Object.fromEntries(
+    Object.entries(customSplits.value).map(([id, v]) => {
+      const n = parseDecimal(v)
+      return [id, Number.isNaN(n) ? 0 : n]
+    }),
+  ),
+  groupId: groupId,
+  date: debtDate.value,
+})
+
 const saveDebts = async () => {
   if (isEditMode.value) {
     await updateDebt()
@@ -242,14 +263,7 @@ const saveDebts = async () => {
   }
 
   const params = {
-    price: price.value,
-    description: description.value,
-    categoryId: selectedCategory.value,
-    payerId: payerId.value,
-    splitType: splitType.value,
-    splits: customSplits.value,
-    groupId: groupId,
-    date: debtDate.value,
+    ...buildParams(),
   }
   let resp = await callService('groupDebts.createGroupDebt', params)
   if (resp.success) {
@@ -266,14 +280,7 @@ const saveDebts = async () => {
 const updateDebt = async () => {
   const params = {
     id: props.expenseToEdit.id,
-    price: price.value,
-    description: description.value,
-    categoryId: selectedCategory.value,
-    payerId: payerId.value,
-    splitType: splitType.value,
-    splits: customSplits.value,
-    groupId: groupId,
-    date: debtDate.value,
+    ...buildParams(),
   }
   let resp = await callService('groupDebts.updateGroupDebt', params)
   if (resp.success) {
@@ -293,8 +300,9 @@ const onFail = (fields) => {
 }
 
 watch([price, splitType], () => {
-  if (splitType.value === 'equal' && groupUsers.value.length && price.value) {
-    const perPerson = +(price.value / groupUsers.value.length).toFixed(2)
+  const total = parseDecimal(price.value)
+  if (splitType.value === 'equal' && groupUsers.value.length && total > 0) {
+    const perPerson = +(total / groupUsers.value.length).toFixed(2)
     customSplits.value = Object.fromEntries(
       groupUsers.value.map((u) => [u.id, perPerson]),
     )
@@ -303,49 +311,35 @@ watch([price, splitType], () => {
 </script>
 
 <style scoped lang="scss">
-@media (min-width: 576px) {
-  .w-sm-auto {
-    width: auto !important;
-  }
+.form-card {
+  border: 1px solid var(--app-border);
+  border-radius: 1.25rem;
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow);
 }
 
-.shadow-custom {
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
-}
-
-.form-control,
-.form-select {
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #eee;
-  background-color: #fcfcfc;
-  transition: all 0.3s;
-
-  &:focus {
-    background-color: #fff;
-    border-color: #764ba2;
-    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
-  }
+.date-input {
+  border-radius: 999px;
+  font-weight: 650;
 }
 
 .input-group-text {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-  background-color: #f1f3f5;
-  border: 1px solid #eee;
+  border-color: var(--app-border);
+  border-radius: 0.75rem 0 0 0.75rem;
+  background: color-mix(in srgb, var(--app-muted) 10%, var(--app-surface));
+  color: var(--app-ink);
 }
 
-.btn-gradient {
-  background: linear-gradient(135deg, #111, #333);
-  color: white;
-  border: none;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
-    color: white;
+.save-btn {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1rem;
+}
+
+@media (min-width: 576px) {
+  .save-btn {
+    width: auto;
+    padding-inline: 3rem;
   }
 }
 </style>

@@ -1,12 +1,20 @@
 <template>
   <div class="mt-6 container calendar w-100" v-if="user">
     <div class="header">
-      <button @click="goToPreviousMonth" class="fs-1 ms-2 calendar-button">
-        &lt;
+      <button
+        @click="goToPreviousMonth"
+        class="nav-arrow"
+        aria-label="Mese precedente"
+      >
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
       </button>
       <h2 class="month">{{ currentMonth }}</h2>
-      <button @click="goToNextMonth" class="fs-1 me-2 calendar-button">
-        &gt;
+      <button
+        @click="goToNextMonth"
+        class="nav-arrow"
+        aria-label="Mese successivo"
+      >
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -14,7 +22,8 @@
       <div
         class="result text-center my-4 py-3 text-white w-auto px-5 rounded-pill shadow-sm total-badge"
       >
-        <span class="small opacity-75 d-block">TOTALE MESE</span> {{ total }} €
+        <span class="small opacity-75 d-block">TOTALE MESE</span>
+        {{ formatEuro(total) }}
       </div>
     </div>
 
@@ -58,7 +67,7 @@
       <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <form id="form-expenses">
           <div class="modal-content">
-            <div class="modal-header bg-light">
+            <div class="modal-header">
               <h5
                 class="modal-title h-100 w-100 align-content-center text-center"
                 style="font-weight: bold"
@@ -86,7 +95,7 @@
                 <button
                   type="button"
                   @click="toggleSelect"
-                  class="btn btn-dark"
+                  class="btn btn-primary"
                   v-show="!showSelect"
                 >
                   <i class="bi bi-plus-lg"></i>
@@ -128,10 +137,9 @@
                     <input
                       autocomplete="off"
                       id="price"
-                      type="number"
+                      type="text"
                       inputmode="decimal"
-                      min="0"
-                      step="0.01"
+                      placeholder="0,00"
                       v-model="newExpensePrice"
                       class="form-control"
                     />
@@ -156,7 +164,7 @@
                 class="mt-3"
               ></AlertMessage>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer">
               <button
                 type="button"
                 class="btn btn-primary"
@@ -167,7 +175,7 @@
               </button>
               <button
                 type="submit"
-                class="btn btn-dark"
+                class="btn btn-primary"
                 v-if="showSelect"
               >
                 Salva
@@ -201,6 +209,8 @@ import { it } from 'date-fns/locale'
 import ExpensesTableModal from './components/ExpensesTableModal.vue'
 import AlertMessage from './components/AlertMessage.vue'
 import callService from '../services/api'
+import { toast } from 'vue3-toastify'
+import { formatEuro, isValidDecimal, parseDecimal } from '../utils/number'
 
 export default {
   name: 'Calendar',
@@ -231,6 +241,7 @@ export default {
       editedExpenses: [],
       validation: null,
       isSaving: false,
+      loadToken: 0,
       selectedCategory: null,
       newExpensePrice: '',
       newExpenseDescription: '',
@@ -266,15 +277,34 @@ export default {
       const dayInCalendar = setDate(this.currentDate, Number(day))
       return isSameDay(new Date(), dayInCalendar)
     },
+    formatEuro,
     formatNumber(value) {
       const number = parseFloat(value.total)
       if (!number) return '-'
-      return number % 1 === 0 ? `${parseInt(number)}€` : `${number.toFixed(2)}€`
+      const text =
+        number % 1 === 0 ? String(number) : number.toFixed(2).replace('.', ',')
+      return `${text}€`
+    },
+    async refreshTotals() {
+      if (!this.user) return
+      const token = ++this.loadToken
+      try {
+        const [days, total] = await Promise.all([
+          this.fetchDays(),
+          this.fetchTotal(),
+        ])
+        // ignora risposte superate da un cambio mese più recente
+        if (token !== this.loadToken) return
+        this.totalOfDays = days
+        this.total = total
+      } catch (error) {
+        console.error('Errore durante il caricamento del calendario:', error)
+      }
     },
     resetModal() {
       if (this.validation) this.validation.destroy()
     },
-    async loadDataForDays() {
+    async fetchDays() {
       const startDate = format(startOfMonth(this.currentDate), 'yyyy-MM-dd')
       const endDate = format(endOfMonth(this.currentDate), 'yyyy-MM-dd')
       const results = await callService('expenses.getTotalOfDays', {
@@ -283,25 +313,24 @@ export default {
         endDate,
       })
 
-      const daysInMonth = getDaysInMonth(this.currentDate)
-      this.totalOfDays = Array.from({ length: daysInMonth }, (_, i) => {
-        const result = results.find((r) => getDate(parseISO(r.date)) === i + 1)
-        return { day: i + 1, total: result ? result.total : 0 }
-      })
+      const byDay = new Map(
+        results.map((r) => [getDate(parseISO(r.date)), r.total]),
+      )
+      return Array.from({ length: getDaysInMonth(this.currentDate) }, (_, i) => ({
+        day: i + 1,
+        total: byDay.get(i + 1) || 0,
+      }))
     },
-    async loadTotal() {
+    async fetchTotal() {
       const startDate = format(startOfMonth(this.currentDate), 'yyyy-MM-dd')
       const endDate = format(endOfMonth(this.currentDate), 'yyyy-MM-dd')
-      try {
-        this.total = await callService('expenses.getTotalOfPeriod', {
+      return (
+        (await callService('expenses.getTotalOfPeriod', {
           userId: this.user.id,
           startDate,
           endDate,
-        })
-      } catch (error) {
-        console.error('Errore durante il caricamento del totale:', error)
-        this.total = 0
-      }
+        })) || 0
+      )
     },
     goToPreviousMonth() {
       this.currentDate = subMonths(this.currentDate, 1)
@@ -310,12 +339,19 @@ export default {
       this.currentDate = addMonths(this.currentDate, 1)
     },
     async editExpense(expense) {
-      await callService('expenses.updateExpense', {
+      const price = parseDecimal(expense.price)
+      if (Number.isNaN(price) || price < 0) {
+        toast.error('Prezzo non valido')
+        await this.loadExpenses()
+        return
+      }
+      const resp = await callService('expenses.updateExpense', {
         id: expense.id,
         category_id: expense.category_id,
         description: expense.description,
-        price: expense.price,
+        price,
       })
+      if (resp?.status !== 200) toast.error(resp?.message || 'Errore')
       await this.loadExpenses()
     },
     async openModal(day) {
@@ -327,7 +363,7 @@ export default {
       this.selectedDay = 'Dettaglio ' + format(this.selectedDate, 'dd/MM/yyyy')
       await this.$nextTick()
       Modal.getOrCreateInstance(this.$refs.dayModal).show()
-      await this.loadExpenses()
+      await this.loadExpenses(false)
     },
     toggleSelect() {
       this.showSelect = !this.showSelect
@@ -335,7 +371,8 @@ export default {
         this.loadValidation()
       })
     },
-    async loadExpenses() {
+    async loadExpenses(refresh = true) {
+      if (!this.selectedDate) return
       const resp = await callService('expenses.getListWithCategories', {
         userId: this.user.id,
         startDate: format(this.selectedDate, 'yyyy-MM-dd'),
@@ -348,25 +385,38 @@ export default {
         description: item?.description,
         price: item?.price,
       }))
+      if (refresh !== false) this.refreshTotals()
     },
     async loadCategories() {
       this.categories = await callService('categories.list', {})
     },
     async saveExpense() {
-      const response = await callService('expenses.createExpense', {
-        category_id: this.selectedCategory,
-        description: this.newExpenseDescription,
-        price: this.newExpensePrice,
-        date: format(this.selectedDate, 'yyyy-MM-dd'),
-        user_id: this.user.id,
-      })
+      if (this.isSaving) return
+      this.isSaving = true
+      try {
+        const response = await callService('expenses.createExpense', {
+          category_id: this.selectedCategory,
+          description: this.newExpenseDescription.trim(),
+          price: parseDecimal(this.newExpensePrice),
+          date: format(this.selectedDate, 'yyyy-MM-dd'),
+          user_id: this.user.id,
+        })
 
-      if (response.status === 200) {
-        this.showSelect = false
-        this.newExpenseDescription = ''
-        this.newExpensePrice = ''
-        await this.loadExpenses()
-        setTimeout(() => (this.showAlertMessage = false), 2000)
+        if (response.status === 200) {
+          this.showSelect = false
+          this.selectedCategory = ''
+          this.newExpenseDescription = ''
+          this.newExpensePrice = ''
+          if (this.validation) this.validation.destroy()
+          await this.loadExpenses()
+        } else {
+          toast.error(response.message || 'Errore durante il salvataggio')
+        }
+      } catch (error) {
+        console.error(error)
+        toast.error('Errore durante il salvataggio')
+      } finally {
+        this.isSaving = false
       }
     },
     loadValidation() {
@@ -376,9 +426,6 @@ export default {
           errorFieldCssClass: 'is-invalid',
           successFieldCssClass: 'is-valid',
         })
-          .onFail(() => {
-            this.errorMessage = 'Controllare i campi inseriti'
-          })
           .onSuccess(async () => {
             await this.saveExpense()
           })
@@ -394,8 +441,8 @@ export default {
               errorMessage: 'Il campo prezzo è obbligatorio',
             },
             {
-              rule: 'number',
-              errorMessage: 'Il campo prezzo deve essere un numero',
+              validator: (value) => isValidDecimal(value) && parseDecimal(value) >= 0,
+              errorMessage: 'Inserisci un importo valido (es. 12,50)',
             },
           ])
           .addField('#description', [
@@ -413,27 +460,15 @@ export default {
       async handler(user) {
         if (!user) return
         try {
-          await Promise.all([
-            this.loadCategories(),
-            this.loadDataForDays(),
-            this.loadTotal(),
-          ])
+          await this.loadCategories()
         } catch (error) {
-          console.error('Errore durante il caricamento del calendario:', error)
+          console.error('Errore durante il caricamento delle categorie:', error)
         }
+        await this.refreshTotals()
       },
     },
-    async currentMonth() {
-      if (this.user) {
-        await this.loadDataForDays()
-        await this.loadTotal()
-      }
-    },
-    async expenses() {
-      if (this.user) {
-        await this.loadDataForDays()
-        await this.loadTotal()
-      }
+    currentDate() {
+      this.refreshTotals()
     },
   },
 }
@@ -442,15 +477,36 @@ export default {
 <style scoped>
 .total-badge {
   background: linear-gradient(135deg, #5146e5 0%, #7770f2 100%);
-  font-family: 'Open Sans', sans-serif;
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-weight: 750;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   box-shadow: 0 10px 24px rgba(81, 70, 229, 0.18) !important;
 }
 
+.nav-arrow {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  background: var(--app-surface);
+  color: var(--app-ink);
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.nav-arrow:hover {
+  border-color: var(--app-primary);
+  color: var(--app-primary);
+  transform: scale(1.06);
+}
+
 .calendar-button {
-  font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
+  font-weight: 650;
   color: #354159;
   border: none;
   background: none;
@@ -503,7 +559,7 @@ export default {
   font-weight: 700;
   color: #5146e5;
   margin-top: 0.2rem;
-  font-family: 'Open Sans', sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: clamp(0.62rem, 1.6vw, 0.85rem);
 }
 
@@ -524,15 +580,15 @@ export default {
   border-radius: clamp(0.55rem, 1vw, 0.85rem);
   background: var(--app-surface);
   transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
 }
 
 .today {
   background-color: #f0efff;
-  border-color: #aaa4ff;
+  border-color: #5146e5;
+  box-shadow: 0 0 0 1px #5146e5 inset;
 }
 
 .day-wrapper.today .calendar-button {
