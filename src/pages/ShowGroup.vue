@@ -16,9 +16,13 @@
       </router-link>
       <h1 class="group-title text-break">{{ group?.name }}</h1>
     </header>
+    <div class="scan-row">
+      <ReceiptScanner :users="group.users || []" @apply="onReceiptApply" />
+    </div>
     <GroupDebtsForm
       :key="formKey"
       :group="group"
+      :prefill="receiptPrefill"
       :categories="categories"
       :expense-to-edit="expenseToEdit"
       @debt-saved="onDebtSaved"
@@ -67,6 +71,7 @@ import Notes from './components/Notes.vue'
 import GroupDebtsForm from './components/GroupDebtsForm.vue'
 import DebtsSummary from './components/DebtsSummary.vue'
 import DebtsTable from './components/DebtsTable.vue'
+import ReceiptScanner from './components/ReceiptScanner.vue'
 
 const props = defineProps({
   user: {
@@ -85,6 +90,7 @@ const isLoading = ref(true)
 const showDebtsTable = ref(true)
 const expenseToEdit = ref(null)
 const formKey = ref(0)
+const receiptPrefill = ref(null)
 const debtForm = ref(null)
 
 onMounted(async () => {
@@ -194,8 +200,18 @@ const handleEditDebt = async (debt) => {
   })
 }
 
+const onReceiptApply = (data) => {
+  expenseToEdit.value = null
+  receiptPrefill.value = data
+  formKey.value++
+  nextTick(() => {
+    debtForm.value?.$el.scrollIntoView({ behavior: 'smooth' })
+  })
+}
+
 const onDebtSaved = () => {
   expenseToEdit.value = null
+  receiptPrefill.value = null
   formKey.value++
   loadGroup()
 }
@@ -229,6 +245,13 @@ const onDebtSaved = () => {
     border-color: var(--app-primary);
     color: var(--app-primary);
   }
+}
+
+.scan-row {
+  display: flex;
+  justify-content: center;
+  max-width: 880px;
+  margin: 0 auto 0.5rem;
 }
 
 .group-title {

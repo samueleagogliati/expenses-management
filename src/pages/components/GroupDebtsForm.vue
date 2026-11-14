@@ -139,6 +139,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  prefill: {
+    type: Object,
+    default: null,
+  },
 })
 const categories = computed(() => props.categories)
 
@@ -181,6 +185,17 @@ const fields = [
 
 onMounted(async () => {
   initGroupData()
+
+  if (props.prefill && !props.expenseToEdit) {
+    const fmt = (n) => n.toFixed(2).replace('.', ',')
+    splitType.value = 'custom'
+    description.value = props.prefill.description || ''
+    if (props.prefill.date) debtDate.value = props.prefill.date
+    customSplits.value = Object.fromEntries(
+      Object.entries(props.prefill.splits).map(([id, v]) => [id, fmt(v)]),
+    )
+    price.value = fmt(props.prefill.price)
+  }
 
   if (isEditMode.value) {
     const expense = props.expenseToEdit
